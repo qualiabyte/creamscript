@@ -48,7 +48,11 @@ void testTokenize()
   cout << "Testing tokenize" << endl;
   auto tokens = tokenize("ABC");
   assert(tokens[0].type == ALPHA);
+  assert(tokens[1].type == ALPHA);
+  assert(tokens[2].type == ALPHA);
   assert(strcmp(tokens[0].value, "A") == 0);
+  assert(strcmp(tokens[1].value, "B") == 0);
+  assert(strcmp(tokens[2].value, "C") == 0);
 }
 
 int main()
