@@ -3,13 +3,17 @@
 #include <cstdio>
 #include <cstring>
 #include <iostream>
+#include <map>
+#include <string>
+#include <vector>
 
 using namespace std;
 
 namespace cream {
 namespace token {
 
-enum TokenType {
+enum CharacterType
+{
     SPACE,          // SP
     ALPHA,          // A-Z a-z
     DIGIT,          // 0-9
@@ -47,7 +51,33 @@ enum TokenType {
     TILDE           // ~
 };
 
-struct Token {
+enum TokenType
+{
+   LOGICAL_AND,     // && and
+   LOGICAL_OR,      // || or
+   COMPARE_EQ,      // == is
+   COMPARE_LT,      // <
+   COMPARE_GT,      // >
+   COMPARE_LTE,     // <=
+   COMPARE_GTE      // >=
+};
+
+map<string, TokenType> Tokens =
+{
+    { "&&"  , LOGICAL_AND },
+    { "and" , LOGICAL_AND },
+    { "||"  , LOGICAL_OR },
+    { "or"  , LOGICAL_OR },
+    { "=="  , COMPARE_EQ },
+    { "is"  , COMPARE_EQ },
+    { "<"   , COMPARE_LT },
+    { "<="  , COMPARE_LTE },
+    { ">"   , COMPARE_GT },
+    { ">="  , COMPARE_GTE }
+};
+
+struct Token
+{
     int type;
     char* value;
 };
