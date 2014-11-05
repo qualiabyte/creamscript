@@ -60,22 +60,22 @@ Token* tokenize(string s)
     char c;
     for (int i = 0; i < len; i++)
     {
-            c = s[i];
-            char* value = new char[4];
-            sprintf(value, "%c", c);
-            if (isalpha(c))
-                tokens[tokenCount++] = { ALPHA, value };
-            if (isspace(c))
-                tokens[tokenCount++] = { SPACE, value };
-            if (c == '+')
-                tokens[tokenCount++] = { PLUS, value };
-            if (c == '-')
-                tokens[tokenCount++] = { MINUS, value };
-            if (c == '*')
-                tokens[tokenCount++] = { ASTERISK, value };
-            if (c == '/')
-                tokens[tokenCount++] = { SLASH, value };
-        }
+        c = s[i];
+        char* value = new char[4];
+        sprintf(value, "%c", c);
+        if (isalpha(c))
+            tokens[tokenCount++] = { ALPHA, value };
+        if (isspace(c))
+            tokens[tokenCount++] = { SPACE, value };
+        if (c == '+')
+            tokens[tokenCount++] = { PLUS, value };
+        if (c == '-')
+            tokens[tokenCount++] = { MINUS, value };
+        if (c == '*')
+            tokens[tokenCount++] = { ASTERISK, value };
+        if (c == '/')
+            tokens[tokenCount++] = { SLASH, value };
+    }
     return tokens;
 }
 
