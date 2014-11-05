@@ -1,10 +1,9 @@
 
-#include "src/token.h"
-
-using namespace std;
+#include "src/Token.h"
 
 int main()
 {
+    using namespace std;
     cout << "Running tests" << endl;
     cream::token::testTokenize();
     cout << "Done!" << endl;
