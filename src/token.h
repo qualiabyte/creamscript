@@ -11,6 +11,7 @@ using namespace std;
 
 namespace cream {
 namespace token {
+namespace symbol {
 
 enum CharacterType
 {
@@ -51,15 +52,20 @@ enum CharacterType
     TILDE           // ~
 };
 
+}
+
 enum TokenType
 {
+   UNDEFINED,
+   WHITESPACE,      // SP*
    LOGICAL_AND,     // && and
    LOGICAL_OR,      // || or
    COMPARE_EQ,      // == is
    COMPARE_LT,      // <
    COMPARE_GT,      // >
    COMPARE_LTE,     // <=
-   COMPARE_GTE      // >=
+   COMPARE_GTE,     // >=
+   UNKNOWN
 };
 
 map<string, TokenType> Tokens =
@@ -79,32 +85,33 @@ map<string, TokenType> Tokens =
 struct Token
 {
     int type;
-    char* value;
+    string value;
 };
 
-Token* tokenize(string s)
+vector<Token> tokenize(string s)
 {
-    int len = s.length();
-    Token* tokens = new Token[len];
-    int tokenCount = 0;
-    char c;
-    for (int i = 0; i < len; i++)
+    vector<Token> tokens;
+    for (int i = 0, len = s.length(); i < len; i++)
     {
-        c = s[i];
-        char* value = new char[4];
-        sprintf(value, "%c", c);
+        Token token;
+        char c = s[i];
+        string value(1, c);
+
         if (isalpha(c))
-            tokens[tokenCount++] = { ALPHA, value };
-        if (isspace(c))
-            tokens[tokenCount++] = { SPACE, value };
-        if (c == '+')
-            tokens[tokenCount++] = { PLUS, value };
-        if (c == '-')
-            tokens[tokenCount++] = { MINUS, value };
-        if (c == '*')
-            tokens[tokenCount++] = { ASTERISK, value };
-        if (c == '/')
-            tokens[tokenCount++] = { SLASH, value };
+            token = { symbol::ALPHA, value };
+        else if (isspace(c))
+            token = { WHITESPACE, value };
+        else if (c == '+')
+            token = { symbol::PLUS, value };
+        else if (c == '-')
+            token = { symbol::MINUS, value };
+        else if (c == '*')
+            token = { symbol::ASTERISK, value };
+        else if (c == '/')
+            token = { symbol::SLASH, value };
+
+        if (token.type)
+            tokens.push_back(token);
     }
     return tokens;
 }
@@ -112,39 +119,39 @@ Token* tokenize(string s)
 void testTokenizeCharacterSequence()
 {
     auto tokens = tokenize("ABC");
-    assert(tokens[0].type == ALPHA);
-    assert(tokens[1].type == ALPHA);
-    assert(tokens[2].type == ALPHA);
-    assert(strcmp(tokens[0].value, "A") == 0);
-    assert(strcmp(tokens[1].value, "B") == 0);
-    assert(strcmp(tokens[2].value, "C") == 0);
+    assert(tokens[0].type == symbol::ALPHA);
+    assert(tokens[1].type == symbol::ALPHA);
+    assert(tokens[2].type == symbol::ALPHA);
+    assert(tokens[0].value == "A");
+    assert(tokens[1].value == "B");
+    assert(tokens[2].value == "C");
 }
 
 void testTokenizeArithmeticExpression()
 {
     auto tokens = tokenize("a + b");
-    assert(tokens[0].type == ALPHA);
-    assert(tokens[1].type == SPACE);
-    assert(tokens[2].type == PLUS);
-    assert(tokens[3].type == SPACE);
-    assert(tokens[4].type == ALPHA);
-    assert(strcmp(tokens[0].value, "a") == 0);
-    assert(strcmp(tokens[1].value, " ") == 0);
-    assert(strcmp(tokens[2].value, "+") == 0);
-    assert(strcmp(tokens[3].value, " ") == 0);
-    assert(strcmp(tokens[4].value, "b") == 0);
+    assert(tokens[0].type == symbol::ALPHA);
+    assert(tokens[1].type == token::WHITESPACE);
+    assert(tokens[2].type == symbol::PLUS);
+    assert(tokens[3].type == token::WHITESPACE);
+    assert(tokens[4].type == symbol::ALPHA);
+    assert(tokens[0].value == "a");
+    assert(tokens[1].value == " ");
+    assert(tokens[2].value == "+");
+    assert(tokens[3].value == " ");
+    assert(tokens[4].value == "b");
 
     tokens = tokenize("a * b / c");
-    assert(tokens[0].type == ALPHA);
-    assert(tokens[2].type == ASTERISK);
-    assert(tokens[4].type == ALPHA);
-    assert(tokens[6].type == SLASH);
-    assert(tokens[8].type == ALPHA);
-    assert(strcmp(tokens[0].value, "a") == 0);
-    assert(strcmp(tokens[2].value, "*") == 0);
-    assert(strcmp(tokens[4].value, "b") == 0);
-    assert(strcmp(tokens[6].value, "/") == 0);
-    assert(strcmp(tokens[8].value, "c") == 0);
+    assert(tokens[0].type == symbol::ALPHA);
+    assert(tokens[2].type == symbol::ASTERISK);
+    assert(tokens[4].type == symbol::ALPHA);
+    assert(tokens[6].type == symbol::SLASH);
+    assert(tokens[8].type == symbol::ALPHA);
+    assert(tokens[0].value == "a");
+    assert(tokens[2].value == "*");
+    assert(tokens[4].value == "b");
+    assert(tokens[6].value == "/");
+    assert(tokens[8].value == "c");
 }
 
 void testTokenize()
