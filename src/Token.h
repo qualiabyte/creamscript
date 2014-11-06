@@ -1,4 +1,6 @@
 
+#pragma once
+
 #include <cassert>
 #include <iostream>
 #include <map>
@@ -10,6 +12,16 @@ namespace cream {
 namespace token {
 
 using namespace std;
+
+struct Token
+{
+    int type;
+    string value;
+    string toString()
+    {
+        return to_string(type) + " " + value;
+    }
+};
 
 enum TokenType
 {
@@ -39,12 +51,6 @@ map<string, TokenType> Tokens =
     { ">="  , COMPARE_GTE }
 };
 
-struct Token
-{
-    int type;
-    string value;
-};
-
 vector<Token> tokenize(string s)
 {
     vector<Token> tokens;
@@ -57,7 +63,7 @@ vector<Token> tokenize(string s)
         if (isalpha(c))
             token = { symbol::ALPHA, value };
         else if (isspace(c))
-            token = { WHITESPACE, value };
+            token = { token::WHITESPACE, value };
         else if (c == '+')
             token = { symbol::PLUS, value };
         else if (c == '-')
@@ -119,4 +125,7 @@ void testTokenize()
 }
 
 } // end cream::token
+
+using Token = cream::token::Token;
+
 } // end cream

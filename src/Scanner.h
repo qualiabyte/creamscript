@@ -85,4 +85,7 @@ void testScanner()
 }
 
 } // end cream::scanner
+
+using Scanner = cream::scanner::Scanner;
+
 } // end cream
