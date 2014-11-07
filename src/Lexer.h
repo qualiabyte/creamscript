@@ -80,13 +80,25 @@ public:
                 }
             }
             else if (c == '+')
+            {
+                value += c;
                 token = { symbol::PLUS, "Plus", value };
+            }
             else if (c == '-')
+            {
+                value += c;
                 token = { symbol::MINUS, "Minus", value };
+            }
             else if (c == '*')
+            {
+                value += c;
                 token = { symbol::ASTERISK, "Asterisk", value };
+            }
             else if (c == '/')
+            {
+                value += c;
                 token = { symbol::SLASH, "Slash", value };
+            }
 
             if (token.type)
                 tokens.push_back(token);
@@ -101,13 +113,30 @@ private:
 void testLexer()
 {
     cout << "Testing Lexer" << endl;
-    string source = "123 abc";
-    Lexer lexer(source);
-    auto tokens = lexer.tokenize();
-    assert(tokens.size() == 3);
-    assert(tokens[0].toString() == "Number 123");
-    assert(tokens[1].toString() == "Whitespace  ");
-    assert(tokens[2].toString() == "Identifier abc");
+
+    {
+        string source = "123 abc";
+        Lexer lexer(source);
+        auto tokens = lexer.tokenize();
+        assert(tokens.size() == 3);
+        assert(tokens[0].toString() == "Number 123");
+        assert(tokens[1].toString() == "Whitespace  ");
+        assert(tokens[2].toString() == "Identifier abc");
+    }
+
+    {
+        string source = "a + b / c * d";
+        Lexer lexer(source);
+        auto tokens = lexer.tokenize();
+        assert(tokens.size() == 13);
+        assert(tokens[0].toString() == "Identifier a");
+        assert(tokens[2].toString() == "Plus +");
+        assert(tokens[4].toString() == "Identifier b");
+        assert(tokens[6].toString() == "Slash /");
+        assert(tokens[8].toString() == "Identifier c");
+        assert(tokens[10].toString() == "Asterisk *");
+        assert(tokens[12].toString() == "Identifier d");
+    }
 }
 
 } // end cream::lexer
