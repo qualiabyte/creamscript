@@ -10,7 +10,6 @@ int main()
     cout << "Running tests" << endl;
     cream::lexer::testLexer();
     cream::scanner::testScanner();
-    cream::token::testTokenize();
     cout << "Done!" << endl;
     return 0;
 }
