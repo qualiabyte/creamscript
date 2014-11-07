@@ -21,13 +21,13 @@ public:
     char seek(int n)
     {
         position += n;
-        return source.at(position);
+        return at(position);
     }
 
     // Peeks at `offset` from current position.
     char peek(int offset = 0)
     {
-        return source.at(position + offset);
+        return at(position + offset);
     }
 
     // Gets next character, seeking forward.
@@ -51,7 +51,10 @@ public:
     // Gets character from the source at `pos`.
     char at(int pos)
     {
-        return source.at(pos);
+        if (pos >= 0 && pos < source.length())
+            return source.at(pos);
+        else
+            return 0;
     }
 
     // Moves to position `pos` in the source.
@@ -60,15 +63,28 @@ public:
         this->position = pos;
     }
 
-private:
+    // Gets the number of remaining characters.
+    int remaining()
+    {
+        return length() - (position + 1);
+    }
+
+    // Gets the length of the source in bytes.
+    int length()
+    {
+        return (int) source.length();
+    }
+
     string source;
     int position;
 };
 
 void testScanner()
 {
+    cout << "Testing Scanner" << endl;
     string source = "123 abc";
     Scanner scanner(source);
+    assert(scanner.length() == 7);
     assert(scanner.peek() == '1');
     assert(scanner.next() == '2');
     assert(scanner.peek(1) == '3');
@@ -76,6 +92,7 @@ void testScanner()
     assert(scanner.at(3) == ' ');
 
     scanner.to(4);
+    assert(scanner.remaining() == 2);
     assert(scanner.peek() == 'a');
     assert(scanner.next() == 'b');
     assert(scanner.current() == 'b');

@@ -16,25 +16,28 @@ using namespace std;
 struct Token
 {
     int type;
+    string name;
     string value;
     string toString()
     {
-        return to_string(type) + " " + value;
+        return name + " " + value;
     }
 };
 
 enum TokenType
 {
-   UNDEFINED,
-   WHITESPACE,      // SP*
-   LOGICAL_AND,     // && and
-   LOGICAL_OR,      // || or
-   COMPARE_EQ,      // == is
-   COMPARE_LT,      // <
-   COMPARE_GT,      // >
-   COMPARE_LTE,     // <=
-   COMPARE_GTE,     // >=
-   UNKNOWN
+    UNDEFINED,
+    IDENTIFIER,      // [a-z,A-Z][a-z,A-Z,0-9,_]+
+    NUMBER,          // [0-9]+(.[0-9]+)?
+    WHITESPACE,      // SP*
+    LOGICAL_AND,     // && and
+    LOGICAL_OR,      // || or
+    COMPARE_EQ,      // == is
+    COMPARE_LT,      // <
+    COMPARE_GT,      // >
+    COMPARE_LTE,     // <=
+    COMPARE_GTE,     // >=
+    UNKNOWN
 };
 
 map<string, TokenType> Tokens =
@@ -61,17 +64,17 @@ vector<Token> tokenize(string s)
         string value(1, c);
 
         if (isalpha(c))
-            token = { symbol::ALPHA, value };
+            token = { symbol::ALPHA, "Alpha", value };
         else if (isspace(c))
-            token = { token::WHITESPACE, value };
+            token = { token::WHITESPACE, "Whitespace", value };
         else if (c == '+')
-            token = { symbol::PLUS, value };
+            token = { symbol::PLUS, "Plus", value };
         else if (c == '-')
-            token = { symbol::MINUS, value };
+            token = { symbol::MINUS, "Minus", value };
         else if (c == '*')
-            token = { symbol::ASTERISK, value };
+            token = { symbol::ASTERISK, "Asterisk", value };
         else if (c == '/')
-            token = { symbol::SLASH, value };
+            token = { symbol::SLASH, "Slash", value };
 
         if (token.type)
             tokens.push_back(token);
