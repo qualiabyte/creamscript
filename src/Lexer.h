@@ -81,23 +81,47 @@ public:
             }
             else if (c == '+')
             {
+                handle_plus:
+
                 value += c;
-                token = { symbol::PLUS, "Plus", value };
+                char next = scanner->peek(1);
+                if (next == '+')
+                {
+                    value += next;
+                    scanner->seek(1);
+                    token = { token::OP_INCREMENT, "Increment", value };
+                }
+                else
+                {
+                    token = { token::OP_ADD, "Add", value };
+                }
             }
             else if (c == '-')
             {
+                handle_minus:
+
                 value += c;
-                token = { symbol::MINUS, "Minus", value };
+                char next = scanner->peek(1);
+                if (next == '-')
+                {
+                    value += next;
+                    scanner->seek(1);
+                    token = { token::OP_DECREMENT, "Decrement", value };
+                }
+                else
+                {
+                    token = { token::OP_SUBTRACT, "Subtract", value };
+                }
             }
             else if (c == '*')
             {
                 value += c;
-                token = { symbol::ASTERISK, "Asterisk", value };
+                token = { token::OP_MULTIPLY, "Multiply", value };
             }
             else if (c == '/')
             {
                 value += c;
-                token = { symbol::SLASH, "Slash", value };
+                token = { token::OP_DIVIDE, "Divide", value };
             }
 
             if (token.type)
@@ -115,6 +139,7 @@ void testLexer()
     cout << "Testing Lexer" << endl;
 
     {
+        // Test Whitespace, Numbers and Identifiers
         string source = "123 abc";
         Lexer lexer(source);
         auto tokens = lexer.tokenize();
@@ -125,17 +150,33 @@ void testLexer()
     }
 
     {
-        string source = "a + b / c * d";
+        // Test Add, Divide, Multiply, Subtract
+        string source = "a + b / c * d - e";
         Lexer lexer(source);
         auto tokens = lexer.tokenize();
-        assert(tokens.size() == 13);
+        assert(tokens.size() == 17);
         assert(tokens[0].toString() == "Identifier a");
-        assert(tokens[2].toString() == "Plus +");
+        assert(tokens[2].toString() == "Add +");
         assert(tokens[4].toString() == "Identifier b");
-        assert(tokens[6].toString() == "Slash /");
+        assert(tokens[6].toString() == "Divide /");
         assert(tokens[8].toString() == "Identifier c");
-        assert(tokens[10].toString() == "Asterisk *");
+        assert(tokens[10].toString() == "Multiply *");
         assert(tokens[12].toString() == "Identifier d");
+        assert(tokens[14].toString() == "Subtract -");
+        assert(tokens[16].toString() == "Identifier e");
+    }
+
+    {
+        // Test Increment and Decrement
+        string source = "a++ + --b";
+        Lexer lexer(source);
+        auto tokens = lexer.tokenize();
+        assert(tokens.size() == 7);
+        assert(tokens[0].toString() == "Identifier a");
+        assert(tokens[1].toString() == "Increment ++");
+        assert(tokens[3].toString() == "Add +");
+        assert(tokens[5].toString() == "Decrement --");
+        assert(tokens[6].toString() == "Identifier b");
     }
 }
 

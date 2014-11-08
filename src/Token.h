@@ -30,6 +30,12 @@ enum TokenType
     IDENTIFIER,      // [a-z,A-Z][a-z,A-Z,0-9,_]+
     NUMBER,          // [0-9]+(.[0-9]+)?
     WHITESPACE,      // SP*
+    OP_ADD,          // +
+    OP_INCREMENT,    // ++
+    OP_SUBTRACT,     // -
+    OP_DECREMENT,    // --
+    OP_MULTIPLY,     // *
+    OP_DIVIDE,       // /
     LOGICAL_AND,     // && and
     LOGICAL_OR,      // || or
     COMPARE_EQ,      // == is
@@ -42,6 +48,12 @@ enum TokenType
 
 map<string, TokenType> Tokens =
 {
+    { "+"   , OP_ADD },
+    { "++"  , OP_INCREMENT },
+    { "-"   , OP_SUBTRACT },
+    { "--"  , OP_DECREMENT },
+    { "*"   , OP_MULTIPLY },
+    { "/"   , OP_DIVIDE },
     { "&&"  , LOGICAL_AND },
     { "and" , LOGICAL_AND },
     { "||"  , LOGICAL_OR },
