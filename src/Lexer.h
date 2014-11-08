@@ -157,6 +157,16 @@ public:
                     token = { token::BITWISE_OR, "Bitwise Or", value };
                 }
             }
+            else if (c == '(')
+            {
+                value += c;
+                token = { token::EXPRESSION_START, "Expression Start", value };
+            }
+            else if (c == ')')
+            {
+                value += c;
+                token = { token::EXPRESSION_END, "Expression End", value };
+            }
 
             if (token.type == token::IDENTIFIER)
             {
@@ -240,6 +250,20 @@ void testLexer()
         assert(tokens[12].toString() == "Identifier d");
         assert(tokens[14].toString() == "Or ||");
         assert(tokens[16].toString() == "Identifier e");
+    }
+
+    {
+        // Test Expression Groups
+        string source = "((a + b) / (c * d))";
+        Lexer lexer(source);
+        auto tokens = lexer.tokenize();
+        assert(tokens.size() == 19);
+        assert(tokens[0].toString() == "Expression Start (");
+        assert(tokens[1].toString() == "Expression Start (");
+        assert(tokens[7].toString() == "Expression End )");
+        assert(tokens[11].toString() == "Expression Start (");
+        assert(tokens[17].toString() == "Expression End )");
+        assert(tokens[18].toString() == "Expression End )");
     }
 }
 

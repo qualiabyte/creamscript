@@ -45,11 +45,11 @@ enum TokenType
     COMPARE_GTE,       // >=
     LOGICAL_AND,       // && and
     LOGICAL_OR,        // || or
-    EXPRESSION_BEGIN,  // (
+    EXPRESSION_START,  // (
     EXPRESSION_END,    // )
-    STATEMENT_BEGIN,   // \n ...
+    STATEMENT_START,   // \n ...
     STATEMENT_END,     // ... \n
-    BLOCK_BEGIN,       // INDENT
+    BLOCK_START,       // INDENT
     BLOCK_END,         // UNINDENT
     INDENT,            //   ...
     UNKNOWN
