@@ -123,6 +123,52 @@ public:
                 value += c;
                 token = { token::OP_DIVIDE, "Divide", value };
             }
+            else if (c == '&')
+            {
+                handle_ampersand:
+
+                value += c;
+                char next = scanner->peek(1);
+                if (next == '&')
+                {
+                    value += next;
+                    scanner->seek(1);
+                    token = { token::LOGICAL_AND, "And", value };
+                }
+                else
+                {
+                    token = { token::BITWISE_AND, "Bitwise And", value };
+                }
+            }
+            else if (c == '|')
+            {
+                handle_pipe:
+
+                value += c;
+                char next = scanner->peek(1);
+                if (next == '|')
+                {
+                    value += next;
+                    scanner->seek(1);
+                    token = { token::LOGICAL_OR, "Or", value };
+                }
+                else
+                {
+                    token = { token::BITWISE_OR, "Bitwise Or", value };
+                }
+            }
+
+            if (token.type == token::IDENTIFIER)
+            {
+                if (token.value == "and")
+                {
+                    token = { token::LOGICAL_AND, "And", token.value };
+                }
+                else if (token.value == "or")
+                {
+                    token = { token::LOGICAL_OR, "Or", token.value };
+                }
+            }
 
             if (token.type)
                 tokens.push_back(token);
@@ -177,6 +223,23 @@ void testLexer()
         assert(tokens[3].toString() == "Add +");
         assert(tokens[5].toString() == "Decrement --");
         assert(tokens[6].toString() == "Identifier b");
+    }
+
+    {
+        // Test Logical Operators
+        string source = "a and b or c && d || e";
+        Lexer lexer(source);
+        auto tokens = lexer.tokenize();
+        assert(tokens.size() == 17);
+        assert(tokens[0].toString() == "Identifier a");
+        assert(tokens[2].toString() == "And and");
+        assert(tokens[4].toString() == "Identifier b");
+        assert(tokens[6].toString() == "Or or");
+        assert(tokens[8].toString() == "Identifier c");
+        assert(tokens[10].toString() == "And &&");
+        assert(tokens[12].toString() == "Identifier d");
+        assert(tokens[14].toString() == "Or ||");
+        assert(tokens[16].toString() == "Identifier e");
     }
 }
 
