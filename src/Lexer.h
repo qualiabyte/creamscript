@@ -16,15 +16,31 @@ using namespace std;
 class Lexer
 {
 public:
-    Lexer(string source)
+    // Constructs a new Lexer instance.
+    Lexer(string source="")
     {
-        this->scanner = new Scanner(source);
+        scanner = new Scanner();
+        scanner->load(source);
+    }
+
+    // Destroys the Lexer.
+    ~Lexer()
+    {
+        delete scanner;
+    }
+
+    // Converts the current source string to Tokens.
+    vector<Token> tokenize()
+    {
+        return tokenize(scanner->source);
     }
 
     // Converts the source string into a series of Token objects.
-    vector<Token> tokenize()
+    vector<Token> tokenize(string source)
     {
         vector<Token> tokens;
+
+        scanner->source = source;
         scanner->position = -1;
         while (scanner->remaining() > 0)
         {
@@ -32,6 +48,7 @@ public:
             string value;
             char c = scanner->next();
 
+            // Tokenize Characters
             if (isalpha(c))
             {
                 handle_identifier:
@@ -168,6 +185,7 @@ public:
                 token = { token::EXPRESSION_END, "Expression End", value };
             }
 
+            // Rewrite Identifiers
             if (token.type == token::IDENTIFIER)
             {
                 if (token.value == "and")
@@ -180,6 +198,7 @@ public:
                 }
             }
 
+            // Add the token
             if (token.type)
                 tokens.push_back(token);
         }
@@ -193,6 +212,21 @@ private:
 void testLexer()
 {
     cout << "Testing Lexer" << endl;
+
+    {
+        // Test single use
+        Lexer lexer("123");
+        auto tokens1 = lexer.tokenize();
+        assert(tokens1.size() == 1);
+        assert(tokens1[0].toString() == "Number 123");
+    }
+
+    {
+        // Test multiple invocations
+        Lexer lexer;
+        assert(lexer.tokenize("123")[0].toString() == "Number 123");
+        assert(lexer.tokenize("abc")[0].toString() == "Identifier abc");
+    }
 
     {
         // Test Whitespace, Numbers and Identifiers

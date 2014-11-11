@@ -12,7 +12,7 @@ using namespace std;
 class Scanner
 {
 public:
-    Scanner(std::string source)
+    Scanner(string source="")
         : source(source),
           position(0)
     {}
@@ -73,6 +73,19 @@ public:
     int length()
     {
         return (int) source.length();
+    }
+
+    // Loads a new source to scan.
+    void load(string source)
+    {
+        this->source = source;
+        rewind();
+    }
+
+    // Rewind the position.
+    void rewind()
+    {
+        position = 0;
     }
 
     string source;
