@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <list>
 #include <string>
 #include <vector>
 #include "Lexer.h"
@@ -41,23 +42,55 @@ struct Expression : Node
         this->value = value;
     }
     virtual ~Expression() {}
+    virtual bool isOperation() { return false; }
     Expression* inner = NULL;
+    Expression* left = NULL;
+    Expression* right = NULL;
 };
 
-struct NumberExpression : Expression
+struct Number : Expression
 {
-    NumberExpression(string value="")
+    Number(string value="")
     {
-        this->type = "NumberExpression";
+        this->type = "Number";
         this->value = value;
     }
-    virtual ~NumberExpression() {}
+    virtual ~Number() {}
 };
 
-struct Assignment : Expression
+struct Identifier : Expression
 {
-    Node* left;
-    Node* right;
+    Identifier(string value="")
+    {
+        this->type = "Identifier";
+        this->value = value;
+    }
+    virtual ~Identifier() {}
+};
+
+struct Operation : Expression
+{
+    Operation(Token token)
+    {
+        this->type = "Operation";
+        this->token = token;
+    }
+    virtual ~Operation() {}
+    virtual bool isOperation() { return true; }
+    Token token;
+};
+
+struct Assignment : Operation
+{
+    Assignment(Token token, Expression* left=0, Expression* right=0)
+        : Operation(token)
+    {
+        this->type = "Assignment";
+        this->token = token;
+        this->left = left;
+        this->right = right;
+    }
+    virtual ~Assignment() {}
 };
 
 struct ExpressionGroup : Expression
@@ -100,18 +133,64 @@ public:
     {
         AST ast;
         Block& root = *ast.root;
+        Statement statement;
+        list<Expression*> expressions;
 
-        for (auto token : tokens)
+        // Process expression tokens
+        for (auto iter = tokens.begin(); iter != tokens.end(); iter++)
         {
-            Statement statement;
+            Token token = *iter;
             Expression* expression;
 
             if (token.type == cream::token::NUMBER)
             {
-                expression = new NumberExpression(token.value);
+                expression = new Number(token.value);
+            }
+            else if (token.type == cream::token::IDENTIFIER)
+            {
+                expression = new Identifier(token.value);
+            }
+            else if (token.type == cream::token::ASSIGN)
+            {
+                expression = new Operation(token);
+            }
+            else if (token.type == cream::token::WHITESPACE)
+            {
+                continue;
             }
 
-            statement.outer = expression;
+            expressions.push_back(expression);
+        }
+
+        // Process operation expressions
+        for (auto iter = expressions.begin(); iter != expressions.end(); iter++)
+        {
+            Expression* expression = *iter;
+            if (expression->type == "Operation")
+            {
+                Operation* operation = (Operation*) expression;
+                auto left = iter; left--;
+                auto right = iter; right++;
+
+                if (operation->token.type == cream::token::ASSIGN)
+                {
+                    auto assignment = new Assignment(operation->token, *left, *right);
+                    expressions.erase(left);
+                    expressions.erase(right);
+                    iter = expressions.erase(iter);
+                    expressions.insert(iter, assignment);
+                }
+            }
+        }
+
+        // Process outer expressions
+        if (expressions.size() > 0)
+        {
+            if (expressions.size() > 1)
+                cerr << "Expected one top expression, found "
+                     << expressions.size() << endl;
+            Expression* topExpression = expressions.front();
+            statement.outer = topExpression;
             root.statements.push_back(statement);
         }
         return ast;
@@ -120,33 +199,38 @@ public:
 
 void testParser()
 {
+    cout << "Testing Parser" << endl;
+
+    // Construct parser
+    Parser parser;
+    Lexer lexer;
+
     {
-        // Test parser construction
-        Parser parser;
-        Lexer lexer("");
-        auto tokens = lexer.tokenize();
-        AST ast = parser.parse(tokens);
+        // Test empty expression
+        auto source = "";
+        auto tokens = lexer.tokenize(source);
+        auto ast = parser.parse(tokens);
         assert(ast.root->statements.size() == 0);
     }
 
     {
         // Test value expression
-        Parser parser;
-        Lexer lexer;
         auto source = "123";
         auto tokens = lexer.tokenize(source);
         auto ast = parser.parse(tokens);
         assert(ast.root->statements.size() == 1);
-        assert(ast.root->statements[0].outer->type == "NumberExpression");
+        assert(ast.root->statements[0].outer->type == "Number");
         assert(ast.root->statements[0].outer->value == "123");
     }
 
-    /*
     {
         // Test variable expression
         auto source = "abc";
         auto tokens = lexer.tokenize(source);
         auto ast = parser.parse(tokens);
+        assert(ast.root->statements.size() == 1);
+        assert(ast.root->statements[0].outer->type == "Identifier");
+        assert(ast.root->statements[0].outer->value == "abc");
     }
 
     {
@@ -154,8 +238,15 @@ void testParser()
         auto source = "abc = 123";
         auto tokens = lexer.tokenize(source);
         auto ast = parser.parse(tokens);
+        assert(ast.root->statements.size() == 1);
+        assert(ast.root->statements[0].outer->type == "Assignment");
+        assert(ast.root->statements[0].outer->left->type == "Identifier");
+        assert(ast.root->statements[0].outer->left->value == "abc");
+        assert(ast.root->statements[0].outer->right->type == "Number");
+        assert(ast.root->statements[0].outer->right->value == "123");
     }
 
+    /*
     {
         // Test type declaration
         auto source = "int abc";

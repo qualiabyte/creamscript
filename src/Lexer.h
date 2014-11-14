@@ -87,13 +87,31 @@ public:
 
                 value += scanner->peek();
                 char next = scanner->peek(1);
-                if (isblank(next) || next == '\n') {
+                if (isblank(next) || next == '\n')
+                {
                     scanner->seek(1);
                     goto handle_whitespace;
                 }
                 else
                 {
                     token = { token::WHITESPACE, "Whitespace", value };
+                }
+            }
+            else if (c == '=')
+            {
+                handle_equal:
+
+                value += scanner->peek();
+                char next = scanner->peek(1);
+                if (next == '=')
+                {
+                    value += next;
+                    scanner->seek(1);
+                    token = { token::COMPARE_EQ, "Compare Eq", value };
+                }
+                else
+                {
+                    token = { token::ASSIGN, "Assign", value };
                 }
             }
             else if (c == '+')

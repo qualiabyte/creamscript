@@ -30,6 +30,7 @@ enum TokenType
     IDENTIFIER,        // [a-z,A-Z][a-z,A-Z,0-9,_]+
     NUMBER,            // [0-9]+(.[0-9]+)?
     WHITESPACE,        // SP*
+    ASSIGN,            // =
     OP_ADD,            // +
     OP_INCREMENT,      // ++
     OP_SUBTRACT,       // -
@@ -57,6 +58,7 @@ enum TokenType
 
 map<string, TokenType> Tokens =
 {
+    { "="   , ASSIGN },
     { "+"   , OP_ADD },
     { "++"  , OP_INCREMENT },
     { "-"   , OP_SUBTRACT },
