@@ -81,13 +81,13 @@ public:
                     token = { token::NUMBER, "Number", value };
                 }
             }
-            else if (isblank(c) || c == '\n')
+            else if (isblank(c))
             {
                 handle_whitespace:
 
                 value += scanner->peek();
                 char next = scanner->peek(1);
-                if (isblank(next) || next == '\n')
+                if (isblank(next))
                 {
                     scanner->seek(1);
                     goto handle_whitespace;
@@ -95,6 +95,22 @@ public:
                 else
                 {
                     token = { token::WHITESPACE, "Whitespace", value };
+                }
+            }
+            else if (c == '\n')
+            {
+                handle_newline:
+
+                value += scanner->peek();
+                char next = scanner->peek(1);
+                if (next == '\n')
+                {
+                    scanner->seek(1);
+                    goto handle_newline;
+                }
+                else
+                {
+                    token = { token::NEWLINE, "Newline", value };
                 }
             }
             else if (c == '=')
@@ -316,6 +332,19 @@ void testLexer()
         assert(tokens[11].toString() == "Expression Start (");
         assert(tokens[17].toString() == "Expression End )");
         assert(tokens[18].toString() == "Expression End )");
+    }
+
+    {
+        // Test Statement Groups
+        string source =
+                "a = 1\n"
+                "b = 2\n"
+                "c = 3";
+        Lexer lexer(source);
+        auto tokens = lexer.tokenize();
+        assert(tokens.size() == 17);
+        assert(tokens[5].toString() == "Newline \n");
+        assert(tokens[11].toString() == "Newline \n");
     }
 }
 
