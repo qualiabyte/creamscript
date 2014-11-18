@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "Rewriter.h"
 #include "Scanner.h"
 #include "Token.h"
 
@@ -21,12 +22,14 @@ public:
     {
         scanner = new Scanner();
         scanner->load(source);
+        rewriter = new Rewriter();
     }
 
     // Destroys the Lexer.
     ~Lexer()
     {
         delete scanner;
+        delete rewriter;
     }
 
     // Converts the current source string to Tokens.
@@ -236,11 +239,13 @@ public:
             if (token.type)
                 tokens.push_back(token);
         }
+        tokens = rewriter->rewrite(tokens);
         return tokens;
     }
 
 private:
     Scanner* scanner;
+    Rewriter* rewriter;
 };
 
 void testLexer()
@@ -263,14 +268,21 @@ void testLexer()
     }
 
     {
-        // Test Whitespace, Numbers and Identifiers
+        // Test whitespace rewriting
+        Lexer lexer;
+        auto source = "a = 1";
+        auto tokens = lexer.tokenize(source);
+        assert(tokens.size() == 3);
+    }
+
+    {
+        // Test Numbers and Identifiers
         string source = "123 abc";
         Lexer lexer(source);
         auto tokens = lexer.tokenize();
-        assert(tokens.size() == 3);
+        assert(tokens.size() == 2);
         assert(tokens[0].toString() == "Number 123");
-        assert(tokens[1].toString() == "Whitespace  ");
-        assert(tokens[2].toString() == "Identifier abc");
+        assert(tokens[1].toString() == "Identifier abc");
     }
 
     {
@@ -278,16 +290,16 @@ void testLexer()
         string source = "a + b / c * d - e";
         Lexer lexer(source);
         auto tokens = lexer.tokenize();
-        assert(tokens.size() == 17);
+        assert(tokens.size() == 9);
         assert(tokens[0].toString() == "Identifier a");
-        assert(tokens[2].toString() == "Add +");
-        assert(tokens[4].toString() == "Identifier b");
-        assert(tokens[6].toString() == "Divide /");
-        assert(tokens[8].toString() == "Identifier c");
-        assert(tokens[10].toString() == "Multiply *");
-        assert(tokens[12].toString() == "Identifier d");
-        assert(tokens[14].toString() == "Subtract -");
-        assert(tokens[16].toString() == "Identifier e");
+        assert(tokens[1].toString() == "Add +");
+        assert(tokens[2].toString() == "Identifier b");
+        assert(tokens[3].toString() == "Divide /");
+        assert(tokens[4].toString() == "Identifier c");
+        assert(tokens[5].toString() == "Multiply *");
+        assert(tokens[6].toString() == "Identifier d");
+        assert(tokens[7].toString() == "Subtract -");
+        assert(tokens[8].toString() == "Identifier e");
     }
 
     {
@@ -295,12 +307,12 @@ void testLexer()
         string source = "a++ + --b";
         Lexer lexer(source);
         auto tokens = lexer.tokenize();
-        assert(tokens.size() == 7);
+        assert(tokens.size() == 5);
         assert(tokens[0].toString() == "Identifier a");
         assert(tokens[1].toString() == "Increment ++");
-        assert(tokens[3].toString() == "Add +");
-        assert(tokens[5].toString() == "Decrement --");
-        assert(tokens[6].toString() == "Identifier b");
+        assert(tokens[2].toString() == "Add +");
+        assert(tokens[3].toString() == "Decrement --");
+        assert(tokens[4].toString() == "Identifier b");
     }
 
     {
@@ -308,16 +320,16 @@ void testLexer()
         string source = "a and b or c && d || e";
         Lexer lexer(source);
         auto tokens = lexer.tokenize();
-        assert(tokens.size() == 17);
+        assert(tokens.size() == 9);
         assert(tokens[0].toString() == "Identifier a");
-        assert(tokens[2].toString() == "And and");
-        assert(tokens[4].toString() == "Identifier b");
-        assert(tokens[6].toString() == "Or or");
-        assert(tokens[8].toString() == "Identifier c");
-        assert(tokens[10].toString() == "And &&");
-        assert(tokens[12].toString() == "Identifier d");
-        assert(tokens[14].toString() == "Or ||");
-        assert(tokens[16].toString() == "Identifier e");
+        assert(tokens[1].toString() == "And and");
+        assert(tokens[2].toString() == "Identifier b");
+        assert(tokens[3].toString() == "Or or");
+        assert(tokens[4].toString() == "Identifier c");
+        assert(tokens[5].toString() == "And &&");
+        assert(tokens[6].toString() == "Identifier d");
+        assert(tokens[7].toString() == "Or ||");
+        assert(tokens[8].toString() == "Identifier e");
     }
 
     {
@@ -325,13 +337,13 @@ void testLexer()
         string source = "((a + b) / (c * d))";
         Lexer lexer(source);
         auto tokens = lexer.tokenize();
-        assert(tokens.size() == 19);
+        assert(tokens.size() == 13);
         assert(tokens[0].toString() == "Expression Start (");
         assert(tokens[1].toString() == "Expression Start (");
-        assert(tokens[7].toString() == "Expression End )");
-        assert(tokens[11].toString() == "Expression Start (");
-        assert(tokens[17].toString() == "Expression End )");
-        assert(tokens[18].toString() == "Expression End )");
+        assert(tokens[5].toString() == "Expression End )");
+        assert(tokens[7].toString() == "Expression Start (");
+        assert(tokens[11].toString() == "Expression End )");
+        assert(tokens[12].toString() == "Expression End )");
     }
 
     {
@@ -342,9 +354,9 @@ void testLexer()
                 "c = 3";
         Lexer lexer(source);
         auto tokens = lexer.tokenize();
-        assert(tokens.size() == 17);
-        assert(tokens[5].toString() == "Newline \n");
-        assert(tokens[11].toString() == "Newline \n");
+        assert(tokens.size() == 11);
+        assert(tokens[3].toString() == "Newline \n");
+        assert(tokens[7].toString() == "Newline \n");
     }
 }
 
