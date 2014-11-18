@@ -18,6 +18,8 @@ struct Token
     int type;
     string name;
     string value;
+    int line;
+    int character;
     string toString()
     {
         return name + " " + value;

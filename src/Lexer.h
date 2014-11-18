@@ -23,6 +23,7 @@ public:
         scanner = new Scanner();
         scanner->load(source);
         rewriter = new Rewriter();
+        resetMetadata();
     }
 
     // Destroys the Lexer.
@@ -30,6 +31,13 @@ public:
     {
         delete scanner;
         delete rewriter;
+    }
+
+    // Resets the Lexer metadata.
+    void resetMetadata()
+    {
+        line = 1;
+        character = 1;
     }
 
     // Converts the current source string to Tokens.
@@ -41,8 +49,21 @@ public:
     // Converts the source string into a series of Token objects.
     vector<Token> tokenize(string source)
     {
-        vector<Token> tokens;
+        auto tokens = scan(source);
+        tokens = rewrite(tokens);
+        return tokens;
+    }
 
+    // Rewrites tokens to simplify parsing.
+    vector<Token> rewrite(vector<Token> tokens)
+    {
+        return rewriter->rewrite(tokens);
+    }
+
+    // Scans source for Token objects.
+    vector<Token> scan(string source)
+    {
+        vector<Token> tokens;
         scanner->source = source;
         scanner->position = -1;
         while (scanner->remaining() > 0)
@@ -235,17 +256,34 @@ public:
                 }
             }
 
+            // Set token metadata
+            token.line = line;
+            token.character = character;
+
+            // Update line and character
+            if (token.type == token::NEWLINE)
+            {
+                character = 1;
+                line += token.value.size();
+            }
+            else
+            {
+                character += token.value.size();
+            }
+
             // Add the token
             if (token.type)
                 tokens.push_back(token);
         }
-        tokens = rewriter->rewrite(tokens);
+        resetMetadata();
         return tokens;
     }
 
 private:
     Scanner* scanner;
     Rewriter* rewriter;
+    int line;
+    int character;
 };
 
 void testLexer()
@@ -357,6 +395,28 @@ void testLexer()
         assert(tokens.size() == 11);
         assert(tokens[3].toString() == "Newline \n");
         assert(tokens[7].toString() == "Newline \n");
+    }
+
+    {
+        // Test token metadata
+        Lexer lexer;
+        auto source =
+                "a = 1\n"
+                "b = 2\n\n"
+                "c = 3";
+        auto tokens = lexer.tokenize(source);
+        assert(tokens[0].line == 1);
+        assert(tokens[0].character == 1);
+        assert(tokens[2].line == 1);
+        assert(tokens[2].character == 5);
+        assert(tokens[4].line == 2);
+        assert(tokens[4].character == 1);
+        assert(tokens[6].line == 2);
+        assert(tokens[6].character == 5);
+        assert(tokens[8].line == 4);
+        assert(tokens[8].character == 1);
+        assert(tokens[10].line == 4);
+        assert(tokens[10].character == 5);
     }
 }
 
