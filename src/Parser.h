@@ -30,6 +30,7 @@ struct Node
     {
         return type + " " + value;
     }
+    Token token;
     string type;
     string value;
 };
@@ -77,7 +78,6 @@ struct Operation : Expression
     }
     virtual ~Operation() {}
     virtual bool isOperation() { return true; }
-    Token token;
 };
 
 struct Assignment : Operation
@@ -100,7 +100,10 @@ struct ExpressionGroup : Expression
 
 struct Statement : Node
 {
-    Expression* outer;
+    Statement() {}
+    virtual ~Statement() {}
+    bool isEmpty() { return outer == NULL; }
+    Expression* outer = NULL;
 };
 
 struct Block : Node
@@ -110,17 +113,9 @@ struct Block : Node
 
 struct AST
 {
-    AST()
-    {
-        root = new Block;
-    }
-
-    ~AST()
-    {
-        delete root;
-    }
-
-    Block* root;
+    AST() {}
+    virtual ~AST() {}
+    Block root;
 };
 
 class Parser
@@ -132,7 +127,38 @@ public:
     AST parse(vector<Token> tokens)
     {
         AST ast;
-        Block& root = *ast.root;
+        ast.root = parseBlock(tokens);
+        return ast;
+    }
+
+    Block parseBlock(vector<Token> tokens)
+    {
+        Block block;
+        vector<Statement> blockItems;
+
+        // Process tokens in block
+        for (auto iter = tokens.begin(); iter != tokens.end(); iter++)
+        {
+            // Process statement tokens
+            vector<Token> statementTokens;
+            while (iter->type != token::NEWLINE && iter != tokens.end())
+            {
+                Token token = *iter;
+                statementTokens.push_back(token);
+                iter++;
+            }
+            Statement statement = parseStatement(statementTokens);
+            blockItems.push_back(statement);
+
+            if (iter == tokens.end())
+                break;
+        }
+        block.statements = blockItems;
+        return block;
+    }
+
+    Statement parseStatement(vector<Token> tokens)
+    {
         Statement statement;
         list<Expression*> expressions;
 
@@ -191,9 +217,9 @@ public:
                      << expressions.size() << endl;
             Expression* topExpression = expressions.front();
             statement.outer = topExpression;
-            root.statements.push_back(statement);
         }
-        return ast;
+
+        return statement;
     }
 };
 
@@ -210,7 +236,7 @@ void testParser()
         auto source = "";
         auto tokens = lexer.tokenize(source);
         auto ast = parser.parse(tokens);
-        assert(ast.root->statements.size() == 0);
+        assert(ast.root.statements.size() == 0);
     }
 
     {
@@ -218,9 +244,9 @@ void testParser()
         auto source = "123";
         auto tokens = lexer.tokenize(source);
         auto ast = parser.parse(tokens);
-        assert(ast.root->statements.size() == 1);
-        assert(ast.root->statements[0].outer->type == "Number");
-        assert(ast.root->statements[0].outer->value == "123");
+        assert(ast.root.statements.size() == 1);
+        assert(ast.root.statements[0].outer->type == "Number");
+        assert(ast.root.statements[0].outer->value == "123");
     }
 
     {
@@ -228,9 +254,9 @@ void testParser()
         auto source = "abc";
         auto tokens = lexer.tokenize(source);
         auto ast = parser.parse(tokens);
-        assert(ast.root->statements.size() == 1);
-        assert(ast.root->statements[0].outer->type == "Identifier");
-        assert(ast.root->statements[0].outer->value == "abc");
+        assert(ast.root.statements.size() == 1);
+        assert(ast.root.statements[0].outer->type == "Identifier");
+        assert(ast.root.statements[0].outer->value == "abc");
     }
 
     {
@@ -238,15 +264,41 @@ void testParser()
         auto source = "abc = 123";
         auto tokens = lexer.tokenize(source);
         auto ast = parser.parse(tokens);
-        assert(ast.root->statements.size() == 1);
-        assert(ast.root->statements[0].outer->type == "Assignment");
-        assert(ast.root->statements[0].outer->left->type == "Identifier");
-        assert(ast.root->statements[0].outer->left->value == "abc");
-        assert(ast.root->statements[0].outer->right->type == "Number");
-        assert(ast.root->statements[0].outer->right->value == "123");
+        assert(ast.root.statements.size() == 1);
+        assert(ast.root.statements[0].outer->type == "Assignment");
+        assert(ast.root.statements[0].outer->left->type == "Identifier");
+        assert(ast.root.statements[0].outer->left->value == "abc");
+        assert(ast.root.statements[0].outer->right->type == "Number");
+        assert(ast.root.statements[0].outer->right->value == "123");
+    }
+
+    {
+        // Test multiple statements
+        auto source = "a = 1\n"
+                      "b = 2\n"
+                      "c = 3";
+        auto tokens = lexer.tokenize(source);
+        auto ast = parser.parse(tokens);
+        assert(ast.root.statements.size() == 3);
+        assert(ast.root.statements[0].outer->token.value == "=");
+        assert(ast.root.statements[0].outer->left->value == "a");
+        assert(ast.root.statements[0].outer->right->value == "1");
+        assert(ast.root.statements[1].outer->token.value == "=");
+        assert(ast.root.statements[1].outer->left->value == "b");
+        assert(ast.root.statements[1].outer->right->value == "2");
+        assert(ast.root.statements[2].outer->token.value == "=");
+        assert(ast.root.statements[2].outer->left->value == "c");
+        assert(ast.root.statements[2].outer->right->value == "3");
     }
 
     /*
+    {
+        // Test assignment operators
+        auto source = "abc += 123";
+        auto tokens = lexer.tokenize(source);
+        auto ast = parser.parse(tokens);
+    }
+
     {
         // Test type declaration
         auto source = "int abc";
@@ -276,13 +328,6 @@ void testParser()
     {
         // Test expression groups
         auto source = "(true && (abc or def))";
-    }
-
-    {
-        // Test multiple statements
-        auto source = "a = 1\n"
-                      "b = 2\n"
-                      "c = 3";
     }
 
     {
