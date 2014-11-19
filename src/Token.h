@@ -19,7 +19,7 @@ struct Token
     string name;
     string value;
     int line;
-    int character;
+    int column;
     string toString()
     {
         return name + " " + value;
