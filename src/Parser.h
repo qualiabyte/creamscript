@@ -80,6 +80,58 @@ struct Operation : Expression
     virtual bool isOperation() { return true; }
 };
 
+struct Addition : Operation
+{
+    Addition(Token token, Expression* left=0, Expression* right=0)
+        : Operation(token)
+    {
+        this->type = "Addition";
+        this->token = token;
+        this->left = left;
+        this->right = right;
+    }
+    virtual ~Addition() {}
+};
+
+struct Subtraction : Operation
+{
+    Subtraction(Token token, Expression* left=0, Expression* right=0)
+        : Operation(token)
+    {
+        this->type = "Subtraction";
+        this->token = token;
+        this->left = left;
+        this->right = right;
+    }
+    virtual ~Subtraction() {}
+};
+
+struct Multiplication : Operation
+{
+    Multiplication(Token token, Expression* left=0, Expression* right=0)
+        : Operation(token)
+    {
+        this->type = "Multiplication";
+        this->token = token;
+        this->left = left;
+        this->right = right;
+    }
+    virtual ~Multiplication() {}
+};
+
+struct Division : Operation
+{
+    Division(Token token, Expression* left=0, Expression* right=0)
+        : Operation(token)
+    {
+        this->type = "Division";
+        this->token = token;
+        this->left = left;
+        this->right = right;
+    }
+    virtual ~Division() {}
+};
+
 struct Assignment : Operation
 {
     Assignment(Token token, Expression* left=0, Expression* right=0)
@@ -95,7 +147,17 @@ struct Assignment : Operation
 
 struct ExpressionGroup : Expression
 {
-    Expression* inner;
+    ExpressionGroup(Token start, Token end, Expression* inner)
+        :Expression()
+    {
+        this->type = "Expression Group";
+        this->start = start;
+        this->end = end;
+        this->inner = inner;
+    }
+    virtual ~ExpressionGroup() {}
+    Token start;
+    Token end;
 };
 
 struct Statement : Node
@@ -160,15 +222,55 @@ public:
     Statement parseStatement(vector<Token> tokens)
     {
         Statement statement;
+        auto expression = parseExpression(tokens);
+        statement.outer = expression;
+        return statement;
+    }
+
+    Expression* parseExpression(vector<Token> tokens)
+    {
         list<Expression*> expressions;
 
         // Process expression tokens
         for (auto iter = tokens.begin(); iter != tokens.end(); iter++)
         {
             Token token = *iter;
-            Expression* expression;
+            Expression* expression = NULL;
 
-            if (token.type == cream::token::NUMBER)
+            if (token.type == cream::token::EXPRESSION_START)
+            {
+                // Get end token
+                auto startPos = token.pair.start;
+                auto endPos = token.pair.end;
+
+                // Save the start token
+                auto start = *iter;
+
+                // Set inner iterator beyond start token
+                auto inner = iter; inner++;
+
+                // Get tokens between start and end
+                vector<Token> innerTokens;
+                while (inner->meta.position < endPos)
+                {
+                    auto innerToken = *inner;
+                    innerTokens.push_back(innerToken);
+                    inner++;
+                }
+
+                // Save the end token
+                auto end = *iter;
+
+                // Parse the expression group
+                auto innerExpression = parseExpression(innerTokens);
+
+                // Set expression pointer for this token
+                expression = new ExpressionGroup(start, end, innerExpression);
+
+                // Advance main iterator to expression end
+                iter = inner;
+            }
+            else if (token.type == cream::token::NUMBER)
             {
                 expression = new Number(token.value);
             }
@@ -176,7 +278,11 @@ public:
             {
                 expression = new Identifier(token.value);
             }
-            else if (token.type == cream::token::ASSIGN)
+            else if (token.type == cream::token::ASSIGN ||
+                     token.type == cream::token::OP_ADD ||
+                     token.type == cream::token::OP_SUBTRACT ||
+                     token.type == cream::token::OP_MULTIPLY ||
+                     token.type == cream::token::OP_DIVIDE)
             {
                 expression = new Operation(token);
             }
@@ -184,8 +290,15 @@ public:
             {
                 continue;
             }
+            else
+            {
+                cerr << "Skipping unknown token during parse: '"
+                     << token.value << "'" << endl;
+                continue;
+            }
 
-            expressions.push_back(expression);
+            if (expression != NULL)
+                expressions.push_back(expression);
         }
 
         // Process operation expressions
@@ -206,20 +319,54 @@ public:
                     iter = expressions.erase(iter);
                     expressions.insert(iter, assignment);
                 }
+                else if (operation->token.type == cream::token::OP_ADD)
+                {
+                    auto addition = new Addition(operation->token, *left, *right);
+                    expressions.erase(left);
+                    expressions.erase(right);
+                    iter = expressions.erase(iter);
+                    expressions.insert(iter, addition);
+                }
+                else if (operation->token.type == cream::token::OP_SUBTRACT)
+                {
+                    auto subtraction = new Subtraction(operation->token, *left, *right);
+                    expressions.erase(left);
+                    expressions.erase(right);
+                    iter = expressions.erase(iter);
+                    expressions.insert(iter, subtraction);
+                }
+                else if (operation->token.type == cream::token::OP_MULTIPLY)
+                {
+                    auto multiplication = new Multiplication(operation->token, *left, *right);
+                    expressions.erase(left);
+                    expressions.erase(right);
+                    iter = expressions.erase(iter);
+                    expressions.insert(iter, multiplication);
+                }
+                else if (operation->token.type == cream::token::OP_DIVIDE)
+                {
+                    auto division = new Division(operation->token, *left, *right);
+                    expressions.erase(left);
+                    expressions.erase(right);
+                    iter = expressions.erase(iter);
+                    expressions.insert(iter, division);
+                }
             }
         }
 
-        // Process outer expressions
-        if (expressions.size() > 0)
+        if (expressions.size() > 1)
         {
-            if (expressions.size() > 1)
-                cerr << "Expected one top expression, found "
-                     << expressions.size() << endl;
-            Expression* topExpression = expressions.front();
-            statement.outer = topExpression;
+            throw std::invalid_argument
+            (
+                "Expected one top expression, found " +
+                to_string(expressions.size())
+            );
         }
+        if (expressions.size() == 0)
+            return NULL;
 
-        return statement;
+        auto topExpression = expressions.front();
+        return topExpression;
     }
 };
 
@@ -289,6 +436,41 @@ void testParser()
         assert(ast.root.statements[2].outer->token.value == "=");
         assert(ast.root.statements[2].outer->left->value == "c");
         assert(ast.root.statements[2].outer->right->value == "3");
+    }
+
+    {
+        // Test expression group
+        auto source = "(a + b)";
+        auto tokens = lexer.tokenize(source);
+        auto ast = parser.parse(tokens);
+        assert(ast.root.statements.size() == 1);
+        assert(ast.root.statements[0].outer->type == "Expression Group");
+        assert(ast.root.statements[0].outer->inner->type == "Addition");
+        assert(ast.root.statements[0].outer->inner->left->type == "Identifier");
+        assert(ast.root.statements[0].outer->inner->right->type == "Identifier");
+        assert(ast.root.statements[0].outer->inner->left->value == "a");
+        assert(ast.root.statements[0].outer->inner->right->value == "b");
+    }
+
+    {
+        // Test expression tree
+        auto source = "((a + b) / (c * d))";
+        auto tokens = lexer.tokenize(source);
+        auto ast = parser.parse(tokens);
+        assert(ast.root.statements.size() == 1);
+        assert(ast.root.statements[0].outer->type == "Expression Group");
+        assert(ast.root.statements[0].outer->inner->type == "Division");
+        assert(ast.root.statements[0].outer->inner->left->type == "Expression Group");
+        assert(ast.root.statements[0].outer->inner->left->inner->type == "Addition");
+        assert(ast.root.statements[0].outer->inner->left->inner->left->type == "Identifier");
+        assert(ast.root.statements[0].outer->inner->left->inner->right->type == "Identifier");
+        assert(ast.root.statements[0].outer->inner->left->inner->left->value == "a");
+        assert(ast.root.statements[0].outer->inner->left->inner->right->value == "b");
+        assert(ast.root.statements[0].outer->inner->right->inner->type == "Multiplication");
+        assert(ast.root.statements[0].outer->inner->right->inner->right->type == "Identifier");
+        assert(ast.root.statements[0].outer->inner->right->inner->right->type == "Identifier");
+        assert(ast.root.statements[0].outer->inner->right->inner->left->value == "c");
+        assert(ast.root.statements[0].outer->inner->right->inner->right->value == "d");
     }
 
     /*
