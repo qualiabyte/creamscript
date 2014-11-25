@@ -2,6 +2,7 @@
 #pragma once
 
 #include <list>
+#include <stdexcept>
 #include <string>
 #include <vector>
 #include "Lexer.h"
@@ -20,6 +21,12 @@ public:
     vector<Token> rewrite(vector<Token> tokens)
     {
         auto tokenList = Util::vec2list(tokens);
+        removeWhitespace(tokenList);
+        addExpressionMetadata(tokenList);
+        return Util::list2vec(tokenList);
+    }
+    void removeWhitespace(list<Token> &tokenList)
+    {
         for (auto iter = tokenList.begin(); iter != tokenList.end(); )
         {
             auto token = *iter;
@@ -28,7 +35,46 @@ public:
             else
                 iter++;
         }
-        return Util::list2vec(tokenList);
+    }
+    void addExpressionMetadata(list<Token> &tokenList)
+    {
+        list<Token*> startTokens;
+        int depth = 0;
+        for (auto iter = tokenList.begin(); iter != tokenList.end(); iter++)
+        {
+            auto token = &(*iter);
+            Token* start;
+            Token* end;
+            if (token->name == "Expression Start")
+            {
+                start = token;
+                cout << "Expression start: " << start->debug();
+                startTokens.push_back(start);
+                depth++;
+            }
+            else if (token->name == "Expression End")
+            {
+                end = token;
+                start = startTokens.back();
+                cout << "Expression end: " << end->debug();
+
+                token::Pair pair = { start->meta.position, end->meta.position };
+                start->pair = pair;
+                end->pair = pair;
+
+                if (depth == 0)
+                {
+                    throw invalid_argument
+                    (
+                        "Extra closing parenthesis found at line " + to_string(token->meta.line) +
+                        ", column " + to_string(token->meta.column) + "\n"
+                    );
+                }
+
+                startTokens.pop_back();
+                depth--;
+            }
+        }
     }
 };
 
