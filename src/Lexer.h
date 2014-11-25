@@ -58,6 +58,7 @@ public:
         vector<Token> tokens;
         int line = 1;
         int column = 1;
+        int position = 1;
         scanner->source = source;
         scanner->position = -1;
         while (scanner->remaining() > 0)
@@ -251,8 +252,10 @@ public:
             }
 
             // Set token metadata
-            token.line = line;
-            token.column = column;
+            token.meta = { line, column, position };
+
+            // Update position
+            position += token.value.size();
 
             // Update line and column
             if (token.type == token::NEWLINE)
@@ -362,6 +365,23 @@ void testLexer()
     }
 
     {
+        // Test Token Pairs
+        string source = "((a + b) / (c * d))";
+        Lexer lexer(source);
+        auto tokens = lexer.tokenize();
+        assert(tokens.size() == 13);
+        assert(tokens[0].pair.start == 1);
+        assert(tokens[0].pair.end == 19);
+        assert(tokens[1].pair.start == 2);
+        assert(tokens[1].pair.end == 8);
+        assert(tokens[11].pair.start == 12);
+        assert(tokens[11].pair.end == 18);
+        assert(tokens[12].pair.start == 1);
+        assert(tokens[12].pair.end == 19);
+    }
+
+
+    {
         // Test Expression Groups
         string source = "((a + b) / (c * d))";
         Lexer lexer(source);
@@ -396,18 +416,24 @@ void testLexer()
                 "b = 2\n\n"
                 "c = 3";
         auto tokens = lexer.tokenize(source);
-        assert(tokens[0].line == 1);
-        assert(tokens[0].column == 1);
-        assert(tokens[2].line == 1);
-        assert(tokens[2].column == 5);
-        assert(tokens[4].line == 2);
-        assert(tokens[4].column == 1);
-        assert(tokens[6].line == 2);
-        assert(tokens[6].column == 5);
-        assert(tokens[8].line == 4);
-        assert(tokens[8].column == 1);
-        assert(tokens[10].line == 4);
-        assert(tokens[10].column == 5);
+        assert(tokens[0].meta.line == 1);
+        assert(tokens[0].meta.column == 1);
+        assert(tokens[0].meta.position == 1);
+        assert(tokens[2].meta.line == 1);
+        assert(tokens[2].meta.column == 5);
+        assert(tokens[2].meta.position == 5);
+        assert(tokens[4].meta.line == 2);
+        assert(tokens[4].meta.column == 1);
+        assert(tokens[4].meta.position == 7);
+        assert(tokens[6].meta.line == 2);
+        assert(tokens[6].meta.column == 5);
+        assert(tokens[6].meta.position == 11);
+        assert(tokens[8].meta.line == 4);
+        assert(tokens[8].meta.column == 1);
+        assert(tokens[8].meta.position == 14);
+        assert(tokens[10].meta.line == 4);
+        assert(tokens[10].meta.column == 5);
+        assert(tokens[10].meta.position == 18);
     }
 }
 
