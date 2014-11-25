@@ -13,13 +13,28 @@ namespace token {
 
 using namespace std;
 
+struct Token;
+
+struct Metadata
+{
+    int line;
+    int column;
+    int position;
+};
+
+struct Pair
+{
+    int start;
+    int end;
+};
+
 struct Token
 {
     int type;
     string name;
     string value;
-    int line;
-    int column;
+    Metadata meta;
+    Pair pair;
     string toString()
     {
         return name + " " + value;
