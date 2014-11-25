@@ -39,6 +39,16 @@ struct Token
     {
         return name + " " + value;
     }
+    string debug()
+    {
+        return "Token '" + value + "'\n" +
+               "  name: " + name + "\n" +
+               "  meta: line " + to_string(meta.line) +
+                     ", column " + to_string(meta.column) +
+                     ", position " + to_string(meta.position) + "\n" +
+               "  pair.start: " + to_string(pair.end) + "\n" +
+               "  pair.end: " + to_string(pair.end) + "\n";
+    }
 };
 
 enum TokenType
