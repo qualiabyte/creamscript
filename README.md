@@ -64,3 +64,40 @@ int main()
 }
 ```
 
+## Features
+
+Language
+
++ ✓ Identifiers
++ ✓ Variables
+  + ✗ Definition
+  + ✗ Assignment
++ ✗ Keywords
++ ✗ Types
++ ✓ Literals
+  + ✓ Numbers
+  + ✗ Strings
++ ✓ Blocks
++ ✓ Statements
+  + ✗ If Else
+  + ✗ For
+  + ✗ While
++ ✓ Expressions
+  + ✓ Expression Groups
++ ✓ Operations
+  + ✓ Arithmetic
+    + ✓ Add, Subtract, Multiply, Divide
++ ✗ Functions
+  + ✗ Definition
+  + ✗ Calls
+  + ✗ Lambdas
+
+Compiler
+
++ ✓ Token
++ ✓ Scanner
++ ✓ Rewriter
++ ✓ Lexer
++ ✓ Parser
++ ✗ Back end
+  + ✗ C++ Output
