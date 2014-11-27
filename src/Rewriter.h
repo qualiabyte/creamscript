@@ -48,7 +48,6 @@ public:
             if (token->name == "Expression Start")
             {
                 start = token;
-                cout << "Expression start: " << start->debug();
                 startTokens.push_back(start);
                 depth++;
             }
@@ -56,7 +55,6 @@ public:
             {
                 end = token;
                 start = startTokens.back();
-                cout << "Expression end: " << end->debug();
 
                 token::Pair pair = { start->meta.position, end->meta.position };
                 start->pair = pair;
