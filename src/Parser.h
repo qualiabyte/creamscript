@@ -532,4 +532,11 @@ void testParser()
 }
 
 } // end cream::parser
+
+using Parser = parser::Parser;
+using AST = parser::AST;
+using Block = parser::Block;
+using Statement = parser::Statement;
+using Expression = parser::Expression;
+
 } // end cream

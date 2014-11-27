@@ -1,4 +1,5 @@
 
+#include "src/Compiler.h"
 #include "src/Lexer.h"
 #include "src/Scanner.h"
 #include "src/Parser.h"
@@ -12,6 +13,7 @@ int main()
     cream::lexer::testLexer();
     cream::scanner::testScanner();
     cream::parser::testParser();
+    cream::compiler::testCompiler();
     cout << "Done!" << endl;
     return 0;
 }
