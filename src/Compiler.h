@@ -106,21 +106,156 @@ void testCompiler()
 
     {
         // Test basic compilation
-        string source = "a = 1";
-        string output = compiler.compile(source);
-        string expected = "a = 1;";
+        auto source = "a = 1";
+        auto output = compiler.compile(source);
+        auto expected = "a = 1;";
         assert(output == expected);
     }
 
     {
         // Test multi-statement compilation
-        string source = "a = 1\n"
+        auto source = "a = 1\n"
                         "b = 2";
-        string output = compiler.compile(source);
-        string expected = "a = 1;\n"
+        auto output = compiler.compile(source);
+        auto expected = "a = 1;\n"
                           "b = 2;";
         assert(output == expected);
     }
+
+    /*
+
+    {
+        // Test lambda expression
+        auto source = "() -> return 42";
+        auto expected = "[] () { return 42; };";
+        auto output = compiler.compile(source);
+        assert(output == expected);
+    }
+
+    {
+        // Test lambda param
+        auto source = "(double a) -> return a * a";
+        auto expected = "[] (double a, double b) { return a * b; }";
+        auto output = compiler.compile(source);
+        assert(output == expected);
+    }
+
+    {
+        // Test lambda params
+        auto source = "(double a, double b) -> return a * b";
+        auto expected = "[] (double a, double b) { return a * b; }";
+        auto output = compiler.compile(source);
+        assert(output == expected);
+    }
+
+    {
+        // Test lambda assignment
+        auto source = "multiply = (double a, double b) -> return a * b";
+        auto expected = "auto multiply = [] (double a, double b) { return a * b; }";
+        auto output = compiler.compile(source);
+        assert(output == expected);
+    }
+
+    {
+        // Test hello world
+        auto source = "int main() ->\n"
+                        "  cout << \"Hello World!\"";
+        auto expected = "int main() {\n"
+                        "  cout << \"Hello World!\";\n"
+                        "}";
+        auto output = compiler.compile(source);
+        assert(output == expected);
+    }
+
+    {
+        // Test variable declaration
+        auto source   = "int a";
+        auto expected = "int a;"
+        auto output = compiler.compile(source);
+        assert(output == expected);
+    }
+
+    {
+        // Test variable declaration with definition
+        auto source   = "int a = 1";
+        auto expected = "int a = 1;"
+        auto output = compiler.compile(source);
+        assert(output == expected);
+    }
+
+    {
+        // Test variable assignment
+        auto source   = "b = 1";
+        auto expected = "b = 1;"
+        auto output = compiler.compile(source);
+        assert(output == expected);
+    }
+
+    {
+        // Test c++ syntax
+        auto source   = "cout << \"Hello World\"";
+        auto expected = "cout << \"Hello World\"";
+        auto output = compiler.compile(source);
+        assert(output == expected);
+    }
+
+    {
+        // Test preprocessor directives
+        auto source   = "#include <string>";
+        auto expected = "#include <string>";
+        auto output = compiler.compile(source);
+        assert(output == expected);
+    }
+
+    {
+        // Test header inclusion
+        auto source   = "import <string>";
+        auto expected = "#include <string>";
+        auto output = compiler.compile(source);
+        assert(output == expected);
+    }
+
+    {
+        // Test source file inclusion
+        auto source   = "import "Vector3f";
+        auto expected = "#include "Vector3f";
+        auto output = compiler.compile(source);
+        assert(output == expected);
+    }
+
+    {
+        // Test function definition
+        auto source   = "int multiply(int a, int b) -> return a * b";
+        auto expected = "int multiply(int a, int b) { return a * b; }";
+        auto output = compiler.compile(source);
+        assert(output == expected);
+    }
+
+    {
+        // Test function calls
+        auto source   = "multiply(a, b)";
+        auto expected = "multiply(a, b);";
+        auto output = compiler.compile(source);
+        assert(output == expected);
+    }
+
+    {
+        // Test lambda functions
+        auto source   = "auto multiply = (double a, double b) -> return a * b";
+        auto expected = "auto multiply = [] (int a, int b) { return a * b; };";
+        auto output = compiler.compile(source);
+        assert(output == expected);
+    }
+
+    {
+        // Test explicit return type
+        auto source   = "auto multiply = int (int a, int b) -> return a * b";
+        auto expected = "auto multiply = [] (int a, int b) -> int { return a * b; };";
+        auto output = compiler.compile(source);
+        assert(output == expected);
+    }
+
+    */
 }
 
 } // end cream::compiler
