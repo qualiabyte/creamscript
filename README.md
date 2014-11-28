@@ -24,7 +24,7 @@ Compiled C++
 ```cpp
 #include <stdio>
 
-using namespace std
+using namespace std;
 
 int main()
 {
