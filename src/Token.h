@@ -55,10 +55,21 @@ enum TokenType
 {
     UNDEFINED,
     IDENTIFIER,        // [a-z,A-Z][a-z,A-Z,0-9,_]+
+    TYPE,              // int, float, double, char...
+    KEYWORD,           // for, while, if, else, return...
     NUMBER,            // [0-9]+(.[0-9]+)?
+    STRING,            // "[^"]*"
     WHITESPACE,        // SP*
     NEWLINE,           // \n
     ASSIGN,            // =
+    ARROW,             // ->
+    PARAMS_START,      // (
+    PARAMS_END,        // )
+    PARAM_TYPE,        // <type>
+    PARAM_NAME,        // <identifier>
+    COMMA,             // ,
+    VAR_TYPE,          // <type>
+    VAR_NAME,          // <identifier>
     OP_ADD,            // +
     OP_INCREMENT,      // ++
     OP_SUBTRACT,       // -
