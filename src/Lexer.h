@@ -178,6 +178,12 @@ public:
                     scanner->seek(1);
                     token = { token::OP_DECREMENT, "Decrement", value };
                 }
+                else if (next == '>')
+                {
+                    value += next;
+                    scanner->seek(1);
+                    token = { token::ARROW, "Arrow", value };
+                }
                 else
                 {
                     token = { token::OP_SUBTRACT, "Subtract", value };
@@ -434,6 +440,15 @@ void testLexer()
         assert(tokens[10].meta.line == 4);
         assert(tokens[10].meta.column == 5);
         assert(tokens[10].meta.position == 18);
+    }
+
+    {
+        // Test Arrow Operator
+        string source = "() -> return 123";
+        Lexer lexer(source);
+        auto tokens = lexer.tokenize();
+        assert(tokens.size() == 5);
+        assert(tokens[2].toString() == "Arrow ->");
     }
 }
 
