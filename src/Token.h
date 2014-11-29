@@ -49,7 +49,14 @@ struct Token
                "  pair.start: " + to_string(pair.end) + "\n" +
                "  pair.end: " + to_string(pair.end) + "\n";
     }
+    static int lastImplicitPos;
+    static int implicitPosition()
+    {
+        return --lastImplicitPos;
+    }
 };
+
+int Token::lastImplicitPos = 0;
 
 enum TokenType
 {

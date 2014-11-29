@@ -23,6 +23,7 @@ public:
         auto tokenList = Util::vec2list(tokens);
         removeWhitespace(tokenList);
         addExpressionMetadata(tokenList);
+        rewriteLambdaExpressions(tokenList);
         return Util::list2vec(tokenList);
     }
     void removeWhitespace(list<Token> &tokenList)
@@ -71,6 +72,98 @@ public:
 
                 startTokens.pop_back();
                 depth--;
+            }
+        }
+    }
+    void rewriteLambdaExpressions(list<Token> &tokenList)
+    {
+        for (auto iter = tokenList.begin(); iter != tokenList.end(); )
+        {
+            auto token = *iter;
+            if (token.name == "Arrow")
+            {
+                auto next = iter; next++;
+                auto prev = iter; prev--;
+
+                // Replace left side with param list
+                if (prev->type != cream::token::EXPRESSION_END)
+                {
+                    // Insert empty param list
+                    auto paramsStart = new Token { cream::token::PARAMS_START, "Params Start", "(" };
+                    auto paramsEnd = new Token { cream::token::PARAMS_END, "Params End", ")" };
+                    tokenList.insert(iter, *paramsStart);
+                    tokenList.insert(iter, *paramsEnd);
+                }
+                else
+                {
+                    // Find the param list start
+                    auto paramsIter = next;
+                    while (paramsIter->meta.position != prev->pair.start && paramsIter != tokenList.begin())
+                    {
+                        paramsIter--;
+                    }
+                    auto start = paramsIter;
+
+                    // Convert start token
+                    start->type = cream::token::PARAMS_START;
+                    start->name = "Params Start";
+
+                    // Convert end token
+                    auto end = prev;
+                    end->type = cream::token::PARAMS_END;
+                    end->name = "Params End";
+                }
+
+                // Replace right side with block
+                if (next->type != cream::token::BLOCK_START)
+                {
+                    // Create tokens to insert
+                    auto blockIter = next;
+                    auto blockStart = new Token { cream::token::BLOCK_START, "Block Start", "{" };
+                    auto blockEnd = new Token { cream::token::BLOCK_END, "Block End", "}" };
+
+                    // Set pair metadata
+                    cream::token::Pair pair;
+                    pair.start = Token::implicitPosition();
+                    pair.end = Token::implicitPosition();
+                    blockStart->pair = pair;
+                    blockEnd->pair = pair;
+
+                    // Set position
+                    blockStart->meta.position = pair.start;
+                    blockEnd->meta.position = pair.end;
+
+                    // Insert block start after arrow
+                    auto start = tokenList.insert(next, *blockStart);
+
+                    // Insert block end before newline
+                    while (blockIter->type != cream::token::NEWLINE && blockIter != tokenList.end())
+                    {
+                        blockIter++;
+                    }
+                    auto end = tokenList.insert(blockIter, *blockEnd);
+
+                    // Advance main iterator to block start
+                    iter = start;
+                }
+                else
+                {
+                    // Find end of existing block
+                    auto start = next;
+                    auto blockIter = next;
+                    while (blockIter != tokenList.end() && blockIter->meta.position != start->pair.end)
+                    {
+                        blockIter++;
+                    }
+                    auto end = blockIter;
+
+                    // Advance main iterator to block start
+                    iter = start;
+                }
+            }
+            else
+            {
+                iter++;
             }
         }
     }

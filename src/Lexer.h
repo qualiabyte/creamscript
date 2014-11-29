@@ -443,11 +443,26 @@ void testLexer()
     }
 
     {
-        // Test Arrow Operator
+        // Test Lambda Expression
         string source = "() -> return 123";
         Lexer lexer(source);
         auto tokens = lexer.tokenize();
-        assert(tokens.size() == 5);
+        assert(tokens.size() == 7);
+        assert(tokens[0].toString() == "Params Start (");
+        assert(tokens[1].toString() == "Params End )");
+        assert(tokens[2].toString() == "Arrow ->");
+        assert(tokens[3].toString() == "Block Start {");
+        assert(tokens[6].toString() == "Block End }");
+    }
+
+    {
+        // Test Implicit Param List
+        string source = "-> return 123";
+        Lexer lexer(source);
+        auto tokens = lexer.tokenize();
+        assert(tokens.size() == 7);
+        assert(tokens[0].toString() == "Params Start (");
+        assert(tokens[1].toString() == "Params End )");
         assert(tokens[2].toString() == "Arrow ->");
     }
 }
