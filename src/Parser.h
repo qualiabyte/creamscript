@@ -18,6 +18,19 @@ struct Block;
 struct Statement;
 struct Expression;
 
+class CreamException: public runtime_error
+{
+public:
+    CreamException(const string message="Cream Exception")
+        : runtime_error(message.c_str())
+    {}
+};
+
+void cassert(bool condition, string message)
+{
+    if (!condition) throw CreamException(message);
+}
+
 struct Node
 {
     Node()
@@ -270,14 +283,8 @@ public:
         auto expressions = parseTokens(tokens);
         processOperations(expressions);
 
-        if (expressions.size() > 1)
-        {
-            throw std::invalid_argument
-            (
-                "Expected one top expression, found " +
-                to_string(expressions.size())
-            );
-        }
+        cassert(expressions.size() < 2, "Expect one top level expression");
+
         if (expressions.size() == 0)
             return NULL;
 
