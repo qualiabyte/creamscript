@@ -269,7 +269,27 @@ public:
     {
         list<Expression*> expressions;
 
-        // Process expression tokens
+        processTokens(tokens, expressions);
+        processOperations(expressions);
+
+        if (expressions.size() > 1)
+        {
+            throw std::invalid_argument
+            (
+                "Expected one top expression, found " +
+                to_string(expressions.size())
+            );
+        }
+        if (expressions.size() == 0)
+            return NULL;
+
+        auto topExpression = expressions.front();
+        return topExpression;
+    }
+
+    // Converts tokens to expression objects.
+    void processTokens(vector<Token> tokens, list<Expression*> &expressions)
+    {
         for (auto iter = tokens.begin(); iter != tokens.end(); iter++)
         {
             Token token = *iter;
@@ -349,8 +369,11 @@ public:
             if (expression != NULL)
                 expressions.push_back(expression);
         }
+    }
 
-        // Process operation expressions
+    // Converts operations to their specific types.
+    void processOperations(list<Expression*> &expressions)
+    {
         for (auto iter = expressions.begin(); iter != expressions.end(); iter++)
         {
             Expression* expression = *iter;
@@ -402,20 +425,6 @@ public:
                 }
             }
         }
-
-        if (expressions.size() > 1)
-        {
-            throw std::invalid_argument
-            (
-                "Expected one top expression, found " +
-                to_string(expressions.size())
-            );
-        }
-        if (expressions.size() == 0)
-            return NULL;
-
-        auto topExpression = expressions.front();
-        return topExpression;
     }
 };
 
