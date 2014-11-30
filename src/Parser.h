@@ -47,6 +47,7 @@ struct Expression : Node
     Expression* inner = NULL;
     Expression* left = NULL;
     Expression* right = NULL;
+    Expression* operand = NULL;
 };
 
 struct Number : Expression
@@ -78,6 +79,30 @@ struct Operation : Expression
     }
     virtual ~Operation() {}
     virtual bool isOperation() { return true; }
+};
+
+struct UnaryOperation : Operation
+{
+    UnaryOperation(Token token, Expression* operand=0)
+        : Operation(token)
+    {
+        this->type = "Unary Operation";
+        this->token = token;
+        this->operand = operand;
+    }
+    virtual ~UnaryOperation() {}
+};
+
+struct Return : UnaryOperation
+{
+    Return(Token token, Expression* operand)
+        : UnaryOperation(token, operand)
+    {
+        this->type = "Return";
+        this->token = token;
+        this->operand = operand;
+    }
+    virtual ~Return() {}
 };
 
 struct Addition : Operation
@@ -278,6 +303,17 @@ public:
             {
                 expression = new Identifier(token.value);
             }
+            else if (token.type == cream::token::KEYWORD)
+            {
+                if (token.name == "Return")
+                {
+                    auto next = iter; next++;
+                    vector<Token> operandTokens { *next };
+                    auto operand = parseExpression(operandTokens);
+                    expression = new Return(token, operand);
+                    iter = next;
+                }
+            }
             else if (token.type == cream::token::ASSIGN ||
                      token.type == cream::token::OP_ADD ||
                      token.type == cream::token::OP_SUBTRACT ||
@@ -471,6 +507,17 @@ void testParser()
         assert(ast.root.statements[0].outer->inner->right->inner->right->type == "Identifier");
         assert(ast.root.statements[0].outer->inner->right->inner->left->value == "c");
         assert(ast.root.statements[0].outer->inner->right->inner->right->value == "d");
+    }
+
+    {
+        // Test return statement
+        auto source = "return 42";
+        auto tokens = lexer.tokenize(source);
+        auto ast = parser.parse(tokens);
+        assert(ast.root.statements.size() == 1);
+        assert(ast.root.statements[0].outer->type == "Return");
+        assert(ast.root.statements[0].outer->operand->type == "Number");
+        assert(ast.root.statements[0].outer->operand->value == "42");
     }
 
     /*
