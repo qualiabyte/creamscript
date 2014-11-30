@@ -21,8 +21,9 @@ public:
     vector<Token> rewrite(vector<Token> tokens)
     {
         auto tokenList = Util::vec2list(tokens);
-        removeWhitespace(tokenList);
         addExpressionMetadata(tokenList);
+        removeWhitespace(tokenList);
+        rewriteKeywords(tokenList);
         rewriteLambdaExpressions(tokenList);
         return Util::list2vec(tokenList);
     }
@@ -35,6 +36,21 @@ public:
                 iter = tokenList.erase(iter);
             else
                 iter++;
+        }
+    }
+    void rewriteKeywords(list<Token> &tokenList)
+    {
+        for (auto iter = tokenList.begin(); iter != tokenList.end(); iter++)
+        {
+            auto &token = *iter;
+            if (token.type == cream::token::IDENTIFIER)
+            {
+                if (token.value == "return")
+                {
+                    token.type = cream::token::KEYWORD;
+                    token.name = "Return";
+                }
+            }
         }
     }
     void addExpressionMetadata(list<Token> &tokenList)

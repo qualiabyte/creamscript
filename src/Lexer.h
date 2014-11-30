@@ -386,7 +386,6 @@ void testLexer()
         assert(tokens[12].pair.end == 19);
     }
 
-
     {
         // Test Expression Groups
         string source = "((a + b) / (c * d))";
@@ -464,6 +463,16 @@ void testLexer()
         assert(tokens[0].toString() == "Params Start (");
         assert(tokens[1].toString() == "Params End )");
         assert(tokens[2].toString() == "Arrow ->");
+    }
+
+    {
+        // Test Return Keyword
+        string source = "return 123";
+        Lexer lexer(source);
+        auto tokens = lexer.tokenize();
+        assert(tokens.size() == 2);
+        assert(tokens[0].type == cream::token::KEYWORD);
+        assert(tokens[0].toString() == "Return return");
     }
 }
 
