@@ -18,17 +18,17 @@ struct Block;
 struct Statement;
 struct Expression;
 
-class CreamException: public runtime_error
+class CreamError: public runtime_error
 {
 public:
-    CreamException(const string message="Cream Exception")
+    CreamError(const string message="Cream Error")
         : runtime_error(message.c_str())
     {}
 };
 
 void cassert(bool condition, string message)
 {
-    if (!condition) throw CreamException(message);
+    if (!condition) throw CreamError(message);
 }
 
 struct Node
@@ -283,7 +283,8 @@ public:
         auto expressions = parseTokens(tokens);
         processOperations(expressions);
 
-        cassert(expressions.size() < 2, "Expect one top level expression");
+        if (expressions.size() > 1)
+            throw CreamError("Expect only one top level expression");
 
         if (expressions.size() == 0)
             return NULL;
