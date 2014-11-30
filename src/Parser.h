@@ -267,9 +267,7 @@ public:
 
     Expression* parseExpression(vector<Token> tokens)
     {
-        list<Expression*> expressions;
-
-        processTokens(tokens, expressions);
+        auto expressions = parseTokens(tokens);
         processOperations(expressions);
 
         if (expressions.size() > 1)
@@ -287,9 +285,10 @@ public:
         return topExpression;
     }
 
-    // Converts tokens to expression objects.
-    void processTokens(vector<Token> tokens, list<Expression*> &expressions)
+    // Creates list of expression objects for given tokens.
+    list<Expression*> parseTokens(vector<Token> tokens)
     {
+        list<Expression*> expressions;
         for (auto iter = tokens.begin(); iter != tokens.end(); iter++)
         {
             Token token = *iter;
@@ -369,6 +368,7 @@ public:
             if (expression != NULL)
                 expressions.push_back(expression);
         }
+        return expressions;
     }
 
     // Converts operations to their specific types.
