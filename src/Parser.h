@@ -105,10 +105,23 @@ struct Return : UnaryOperation
     virtual ~Return() {}
 };
 
-struct Addition : Operation
+struct BinaryOperation : Operation
+{
+    BinaryOperation(Token token, Expression* left=0, Expression* right=0)
+        : Operation(token)
+    {
+        this->type = "Binary Operation";
+        this->token = token;
+        this->left = left;
+        this->right = right;
+    }
+    virtual ~BinaryOperation() {}
+};
+
+struct Addition : BinaryOperation
 {
     Addition(Token token, Expression* left=0, Expression* right=0)
-        : Operation(token)
+        : BinaryOperation(token, left, right)
     {
         this->type = "Addition";
         this->token = token;
@@ -118,10 +131,10 @@ struct Addition : Operation
     virtual ~Addition() {}
 };
 
-struct Subtraction : Operation
+struct Subtraction : BinaryOperation
 {
     Subtraction(Token token, Expression* left=0, Expression* right=0)
-        : Operation(token)
+        : BinaryOperation(token, left, right)
     {
         this->type = "Subtraction";
         this->token = token;
@@ -131,10 +144,10 @@ struct Subtraction : Operation
     virtual ~Subtraction() {}
 };
 
-struct Multiplication : Operation
+struct Multiplication : BinaryOperation
 {
     Multiplication(Token token, Expression* left=0, Expression* right=0)
-        : Operation(token)
+        : BinaryOperation(token, left, right)
     {
         this->type = "Multiplication";
         this->token = token;
@@ -144,10 +157,10 @@ struct Multiplication : Operation
     virtual ~Multiplication() {}
 };
 
-struct Division : Operation
+struct Division : BinaryOperation
 {
     Division(Token token, Expression* left=0, Expression* right=0)
-        : Operation(token)
+        : BinaryOperation(token, left, right)
     {
         this->type = "Division";
         this->token = token;
@@ -157,10 +170,10 @@ struct Division : Operation
     virtual ~Division() {}
 };
 
-struct Assignment : Operation
+struct Assignment : BinaryOperation
 {
     Assignment(Token token, Expression* left=0, Expression* right=0)
-        : Operation(token)
+        : BinaryOperation(token, left, right)
     {
         this->type = "Assignment";
         this->token = token;
