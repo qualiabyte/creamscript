@@ -57,9 +57,18 @@ struct Expression : Node
     }
     virtual ~Expression() {}
     virtual bool isOperation() { return false; }
+
+    // Block members
+    vector<Statement> statements;
+
+    // Statement members
     Expression* inner = NULL;
+
+    // Binary operation members
     Expression* left = NULL;
     Expression* right = NULL;
+
+    // Unary operation members
     Expression* operand = NULL;
 };
 
@@ -219,9 +228,14 @@ struct Statement : Node
     Expression* outer = NULL;
 };
 
-struct Block : Node
+struct Block : Expression
 {
-    vector<Statement> statements;
+    Block(vector<Statement> statements={})
+    {
+        this->type = "Block";
+        this->statements = statements;
+    }
+    virtual ~Block() {}
 };
 
 struct AST
@@ -302,7 +316,15 @@ public:
             Token token = *iter;
             Expression* expression = NULL;
 
-            if (token.type == cream::token::EXPRESSION_START)
+            if (token.type == cream::token::BLOCK_START)
+            {
+                auto start = iter;
+                auto blockTokens = Pair::innerTokens(start);
+                auto block = parseBlock(blockTokens);
+                expression = new Block(block);
+                Pair::advanceToEnd(iter);
+            }
+            else if (token.type == cream::token::EXPRESSION_START)
             {
                 // Get end token
                 auto startPos = token.pair.start;
@@ -548,6 +570,20 @@ void testParser()
         assert(ast.root.statements[0].outer->type == "Return");
         assert(ast.root.statements[0].outer->operand->type == "Number");
         assert(ast.root.statements[0].outer->operand->value == "42");
+    }
+
+    {
+        // Test block
+        auto source = "() -> return 42";
+        auto tokens = lexer.tokenize(source);
+        assert(tokens.size() == 7);
+        vector<Token> blockTokens({ tokens[3], tokens[4], tokens[5], tokens[6] });
+        auto ast = parser.parse(blockTokens);
+        assert(ast.root.statements.size() == 1);
+        assert(ast.root.statements[0].outer->type == "Block");
+        assert(ast.root.statements[0].outer->statements[0].outer->type == "Return");
+        assert(ast.root.statements[0].outer->statements[0].outer->operand->type == "Number");
+        assert(ast.root.statements[0].outer->statements[0].outer->operand->value == "42");
     }
 
     /*
