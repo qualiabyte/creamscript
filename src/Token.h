@@ -26,6 +26,8 @@ struct Pair
 {
     int start;
     int end;
+    static vector<Token> innerTokens(vector<Token>::iterator start);
+    static void advanceToEnd(vector<Token>::iterator & iter, Pair* pair=0);
 };
 
 struct Token
@@ -49,14 +51,42 @@ struct Token
                "  pair.start: " + to_string(pair.end) + "\n" +
                "  pair.end: " + to_string(pair.end) + "\n";
     }
-    static int lastImplicitPos;
+
+    // Gets the next position for implicit tokens.
     static int implicitPosition()
     {
         return --lastImplicitPos;
     }
+    static int lastImplicitPos;
 };
 
 int Token::lastImplicitPos = 0;
+
+// Gets inner tokens, given a token pair start iterator.
+vector<Token>
+Pair::innerTokens(vector<Token>::iterator start)
+{
+    vector<Token> innerTokens;
+    auto inner = start; inner++;
+    while (inner->meta.position != start->pair.end)
+    {
+        auto innerToken = *inner;
+        innerTokens.push_back(innerToken);
+        inner++;
+    }
+    return innerTokens;
+}
+
+// Advances iterator to end of a token pair.
+void
+Pair::advanceToEnd(vector<Token>::iterator & iter, Pair* pair)
+{
+    if (!pair) pair = &iter->pair;
+    while (iter->meta.position != pair->end)
+    {
+        iter++;
+    }
+}
 
 enum TokenType
 {
@@ -128,5 +158,6 @@ map<string, TokenType> Tokens =
 } // end cream::token
 
 using Token = cream::token::Token;
+using Pair = cream::token::Pair;
 
 } // end cream
