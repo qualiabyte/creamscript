@@ -17,6 +17,8 @@ struct Node;
 struct Block;
 struct Statement;
 struct Expression;
+struct Parameter;
+struct ParamList;
 
 class CreamError: public runtime_error
 {
@@ -60,6 +62,13 @@ struct Expression : Node
 
     // Block members
     vector<Statement> statements;
+
+    // Lambda members
+    ParamList* paramList = NULL;
+    Block* block = NULL;
+
+    // ParamList members
+    vector<Parameter> params;
 
     // Statement members
     Expression* inner = NULL;
@@ -238,6 +247,55 @@ struct Block : Expression
     virtual ~Block() {}
 };
 
+struct Parameter : Node
+{
+    Parameter(string paramType, string paramName, string defaultValue="")
+        : Node()
+    {
+        this->type = "Parameter";
+        this->token = token;
+        this->paramType = paramType;
+        this->paramName = paramName;
+        this->defaultValue = defaultValue;
+    }
+    virtual ~Parameter() {}
+
+    string paramType;
+    string paramName;
+    string defaultValue;
+};
+
+struct ParamList : Expression
+{
+    ParamList(Token start, Token end, vector<Parameter> params)
+    {
+        this->type = "Parameter List";
+        this->start = start;
+        this->end = end;
+        this->params = params;
+    }
+    virtual ~ParamList() {}
+    Token start;
+    Token end;
+};
+
+struct Lambda : Expression
+{
+    Lambda(Token token, ParamList* paramList, Block* block)
+        : Expression()
+    {
+        this->type = "Lambda";
+        this->token = token;
+        this->paramList = paramList;
+        this->block = block;
+    }
+    virtual ~Lambda()
+    {
+        delete block;
+        delete paramList;
+    }
+};
+
 struct AST
 {
     AST() {}
@@ -333,6 +391,20 @@ public:
                 expression = new ExpressionGroup(*start, *end, innerExpression);
                 Pair::advanceToEnd(iter);
             }
+            else if (token.type == cream::token::PARAMS_START)
+            {
+                // TODO: Parse param tokens
+                auto start = iter;
+                auto end = Pair::endFor(start);
+                auto innerTokens = Pair::innerTokens(start);
+                vector<Parameter> params {};
+                expression = new ParamList(*start, *end, params);
+                Pair::advanceToEnd(iter);
+            }
+            else if (token.type == cream::token::ARROW)
+            {
+                expression = new Operation(token);
+            }
             else if (token.type == cream::token::NUMBER)
             {
                 expression = new Number(token.value);
@@ -345,6 +417,7 @@ public:
             {
                 if (token.name == "Return")
                 {
+                    // TODO: Implicit return expressions
                     auto next = iter; next++;
                     vector<Token> operandTokens { *next };
                     auto operand = parseExpression(operandTokens);
@@ -389,6 +462,16 @@ public:
                 auto left = iter; left--;
                 auto right = iter; right++;
 
+                if (operation->token.type == cream::token::ARROW)
+                {
+                    auto paramList = (ParamList*) *left;
+                    auto block = (Block*) *right;
+                    auto lambda = new Lambda(operation->token, paramList, block);
+                    expressions.erase(left);
+                    expressions.erase(right);
+                    iter = expressions.erase(iter);
+                    expressions.insert(iter, lambda);
+                }
                 if (operation->token.type == cream::token::ASSIGN)
                 {
                     auto assignment = new Assignment(operation->token, *left, *right);
@@ -560,6 +643,22 @@ void testParser()
         assert(ast.root.statements[0].outer->statements[0].outer->type == "Return");
         assert(ast.root.statements[0].outer->statements[0].outer->operand->type == "Number");
         assert(ast.root.statements[0].outer->statements[0].outer->operand->value == "42");
+    }
+
+    {
+        // Test lambda expression
+        auto source = "() -> return 42";
+        auto tokens = lexer.tokenize(source);
+        auto ast = parser.parse(tokens);
+        assert(ast.root.statements.size() == 1);
+        assert(ast.root.statements[0].outer->type == "Lambda");
+        assert(ast.root.statements[0].outer->paramList->type == "Parameter List");
+        assert(ast.root.statements[0].outer->paramList->params.size() == 0);
+        assert(ast.root.statements[0].outer->block->type == "Block");
+        assert(ast.root.statements[0].outer->block->statements.size() == 1);
+        assert(ast.root.statements[0].outer->block->statements[0].outer->type == "Return");
+        assert(ast.root.statements[0].outer->block->statements[0].outer->operand->type == "Number");
+        assert(ast.root.statements[0].outer->block->statements[0].outer->operand->value == "42");
     }
 
     /*
