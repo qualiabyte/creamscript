@@ -326,36 +326,12 @@ public:
             }
             else if (token.type == cream::token::EXPRESSION_START)
             {
-                // Get end token
-                auto startPos = token.pair.start;
-                auto endPos = token.pair.end;
-
-                // Save the start token
-                auto start = *iter;
-
-                // Set inner iterator beyond start token
-                auto inner = iter; inner++;
-
-                // Get tokens between start and end
-                vector<Token> innerTokens;
-                while (inner->meta.position < endPos)
-                {
-                    auto innerToken = *inner;
-                    innerTokens.push_back(innerToken);
-                    inner++;
-                }
-
-                // Save the end token
-                auto end = *iter;
-
-                // Parse the expression group
+                auto start = iter;
+                auto end = Pair::endFor(start);
+                auto innerTokens = Pair::innerTokens(start);
                 auto innerExpression = parseExpression(innerTokens);
-
-                // Set expression pointer for this token
-                expression = new ExpressionGroup(start, end, innerExpression);
-
-                // Advance main iterator to expression end
-                iter = inner;
+                expression = new ExpressionGroup(*start, *end, innerExpression);
+                Pair::advanceToEnd(iter);
             }
             else if (token.type == cream::token::NUMBER)
             {
