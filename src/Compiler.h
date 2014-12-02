@@ -107,8 +107,8 @@ void testCompiler()
     {
         // Test basic compilation
         auto source = "a = 1";
-        auto output = compiler.compile(source);
         auto expected = "a = 1;";
+        auto output = compiler.compile(source);
         assert(output == expected);
     }
 
@@ -116,9 +116,9 @@ void testCompiler()
         // Test multi-statement compilation
         auto source = "a = 1\n"
                         "b = 2";
-        auto output = compiler.compile(source);
         auto expected = "a = 1;\n"
                           "b = 2;";
+        auto output = compiler.compile(source);
         assert(output == expected);
     }
 
