@@ -27,6 +27,7 @@ struct Pair
     int start;
     int end;
     static vector<Token> innerTokens(vector<Token>::iterator start);
+    static vector<Token>::iterator endFor(vector<Token>::iterator start);
     static void advanceToEnd(vector<Token>::iterator & iter, Pair* pair=0);
 };
 
@@ -62,7 +63,10 @@ struct Token
 
 int Token::lastImplicitPos = 0;
 
-// Gets inner tokens, given a token pair start iterator.
+/**
+ * Gets inner tokens, given a token pair start iterator.
+ */
+
 vector<Token>
 Pair::innerTokens(vector<Token>::iterator start)
 {
@@ -77,7 +81,22 @@ Pair::innerTokens(vector<Token>::iterator start)
     return innerTokens;
 }
 
-// Advances iterator to end of a token pair.
+/**
+ * Gets matching end for iterator at token pair start.
+ */
+
+vector<Token>::iterator
+Pair::endFor(vector<Token>::iterator start)
+{
+    auto end = start;
+    Pair::advanceToEnd(end);
+    return end;
+}
+
+/**
+ * Advances iterator to end of a token pair.
+ */
+
 void
 Pair::advanceToEnd(vector<Token>::iterator & iter, Pair* pair)
 {
