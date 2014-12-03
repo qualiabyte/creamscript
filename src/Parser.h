@@ -353,6 +353,27 @@ public:
         return topExpression;
     }
 
+    // Parses parameter list given the inner tokens.
+    vector<Parameter> parseParams(vector<Token> paramTokens)
+    {
+        vector<Parameter> params;
+        for (auto iter = paramTokens.begin(); iter != paramTokens.end(); iter++)
+        {
+            auto type = iter;
+            auto name = iter + 1;
+            auto comma = iter + 2;
+
+            Parameter param(type->value, name->value);
+            params.push_back(param);
+
+            if (comma == paramTokens.end())
+                break;
+            else
+                iter = comma;
+        }
+        return params;
+    }
+
     // Creates list of expression objects for given tokens.
     list<Expression*> parseTokens(vector<Token> tokens)
     {
@@ -381,11 +402,10 @@ public:
             }
             else if (token.type == cream::token::PARAMS_START)
             {
-                // TODO: Parse param tokens
                 auto start = iter;
                 auto end = Pair::endFor(start);
                 auto innerTokens = Pair::innerTokens(start);
-                vector<Parameter> params {};
+                auto params = parseParams(innerTokens);
                 expression = new ParamList(*start, *end, params);
                 Pair::advanceToEnd(iter);
             }
@@ -647,6 +667,21 @@ void testParser()
         assert(ast.root.statements[0].outer->block->statements[0].outer->type == "Return");
         assert(ast.root.statements[0].outer->block->statements[0].outer->operand->type == "Number");
         assert(ast.root.statements[0].outer->block->statements[0].outer->operand->value == "42");
+    }
+
+    {
+        // Test parameter list
+        auto source = "(double a, double b) -> return a + b";
+        auto tokens = lexer.tokenize(source);
+        auto ast = parser.parse(tokens);
+        assert(ast.root.statements.size() == 1);
+        assert(ast.root.statements[0].outer->type == "Lambda");
+        assert(ast.root.statements[0].outer->paramList->type == "Parameter List");
+        assert(ast.root.statements[0].outer->paramList->params.size() == 2);
+        assert(ast.root.statements[0].outer->paramList->params[0].paramType == "double");
+        assert(ast.root.statements[0].outer->paramList->params[0].paramName == "a");
+        assert(ast.root.statements[0].outer->paramList->params[1].paramType == "double");
+        assert(ast.root.statements[0].outer->paramList->params[1].paramName == "b");
     }
 
     /*
