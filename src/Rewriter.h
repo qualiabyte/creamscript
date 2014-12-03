@@ -2,9 +2,9 @@
 #pragma once
 
 #include <list>
-#include <stdexcept>
 #include <string>
 #include <vector>
+#include "Common.h"
 #include "Lexer.h"
 #include "Token.h"
 #include "Util.h"
@@ -79,10 +79,10 @@ public:
 
                 if (depth == 0)
                 {
-                    throw invalid_argument
-                    (
-                        "Extra closing parenthesis found at line " + to_string(token->meta.line) +
-                        ", column " + to_string(token->meta.column) + "\n"
+                    throw CreamError(
+                        "Extra closing parenthesis found at "
+                        "line " + to_string(token->meta.line) + ", "
+                        "column " + to_string(token->meta.column) + "\n"
                     );
                 }
 

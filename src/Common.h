@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <stdexcept>
 #include <string>
 
 namespace cream {
@@ -21,13 +22,13 @@ public:
 };
 
 /**
- * A custom assert method.
+ * A custom assertion method.
  *
  * @param condition The asserted condition.
  * @param message The assertion message.
  */
 
-inline void cassert(bool condition, string message)
+inline void creamAssert(bool condition, string message)
 {
     if (!condition) throw CreamError(message);
 }
@@ -35,6 +36,6 @@ inline void cassert(bool condition, string message)
 } // end cream::common
 
 using CreamError = common::CreamError;
-auto cassert = common::cassert;
+auto creamAssert = common::creamAssert;
 
 } // end cream
