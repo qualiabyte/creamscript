@@ -4,6 +4,7 @@
 #include <list>
 #include <string>
 #include <vector>
+#include "Common.h"
 #include "Lexer.h"
 #include "Token.h"
 
@@ -19,19 +20,6 @@ struct Statement;
 struct Expression;
 struct Parameter;
 struct ParamList;
-
-class CreamError: public runtime_error
-{
-public:
-    CreamError(const string message="Cream Error")
-        : runtime_error(message.c_str())
-    {}
-};
-
-void cassert(bool condition, string message)
-{
-    if (!condition) throw CreamError(message);
-}
 
 struct Node
 {
