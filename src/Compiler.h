@@ -24,18 +24,30 @@ class CppBackend : Backend
 public:
     CppBackend() {}
     virtual ~CppBackend() {}
+
     string compile(AST ast)
     {
-        string output = compileBlock(ast.root);
+        string output = compileStatements(ast.root.statements);
         return output;
     }
-    string compileBlock(Block block)
+
+    string compileBlock(Block* block)
     {
         string output;
-        int len = block.statements.size();
+        string padding = (block->statements.size() > 1) ? "\n" : " ";
+        output += "{" + padding;
+        output += compileStatements(block->statements) + padding;
+        output += "}";
+        return output;
+    }
+
+    string compileStatements(vector<Statement> statements)
+    {
+        string output;
+        int len = statements.size();
         for (int i = 0; i < len; i++)
         {
-            Statement statement = block.statements.at(i);
+            Statement statement = statements.at(i);
             string result = compileStatement(statement);
             output += result;
             if (i < len - 1)
@@ -43,11 +55,13 @@ public:
         }
         return output;
     }
+
     string compileStatement(Statement statement)
     {
         string output = compileExpression(statement.outer) + ";";
         return output;
     }
+
     string compileExpression(Expression* expression)
     {
         string output;
@@ -56,6 +70,14 @@ public:
             output += compileExpression(expression->left);
             output += " = ";
             output += compileExpression(expression->right);
+        }
+        else if (expression->type == "Lambda")
+        {
+            output += compileLambda((Lambda*) expression);
+        }
+        else if (expression->type == "Return")
+        {
+            output += compileReturn((Return*) expression);
         }
         else if (expression->type == "Identifier")
         {
@@ -66,6 +88,44 @@ public:
             output += expression->value;
         }
         return output;
+    }
+
+    string compileLambda(Lambda* lambda)
+    {
+        string output;
+        output += compileLambdaCaptures(lambda) + " ";
+        output += compileLambdaParams(lambda) + " ";
+        output += compileLambdaBlock(lambda);
+        return output;
+    }
+
+    string compileLambdaCaptures(Lambda* lambda)
+    {
+        return "[]";
+    }
+
+    string compileLambdaParams(Lambda* lambda)
+    {
+        string output = "(";
+        auto params = lambda->paramList->params;
+        for (auto iter = params.begin(); iter != params.end(); iter++)
+        {
+            auto param = *iter;
+            output += param.paramType + " ";
+            output += param.paramName;
+        }
+        output += ")";
+        return output;
+    }
+
+    string compileLambdaBlock(Lambda* lambda)
+    {
+        return compileBlock(lambda->block);
+    }
+
+    string compileReturn(Return* returnExpr)
+    {
+        return "return " + compileExpression(returnExpr->operand);
     }
 };
 
@@ -78,12 +138,14 @@ public:
         this->parser = new Parser;
         this->backend = (Backend*) new CppBackend;
     }
+
     virtual ~Compiler()
     {
         delete lexer;
         delete parser;
         delete backend;
     }
+
     string compile(string source)
     {
         auto tokens = lexer->tokenize(source);
@@ -122,8 +184,6 @@ void testCompiler()
         assert(output == expected);
     }
 
-    /*
-
     {
         // Test lambda expression
         auto source = "() -> return 42";
@@ -132,6 +192,7 @@ void testCompiler()
         assert(output == expected);
     }
 
+    /*
     {
         // Test lambda param
         auto source = "(double a) -> return a * a";
@@ -254,7 +315,6 @@ void testCompiler()
         auto output = compiler.compile(source);
         assert(output == expected);
     }
-
     */
 }
 

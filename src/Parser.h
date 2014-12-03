@@ -749,5 +749,9 @@ using AST = parser::AST;
 using Block = parser::Block;
 using Statement = parser::Statement;
 using Expression = parser::Expression;
+using Lambda = parser::Lambda;
+using Parameter = parser::Parameter;
+using ParamList = parser::ParamList;
+using Return = parser::Return;
 
 } // end cream
