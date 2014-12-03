@@ -243,6 +243,11 @@ public:
                 value += c;
                 token = { token::EXPRESSION_END, "Expression End", value };
             }
+            else if (c == ',')
+            {
+                value += c;
+                token = { token::COMMA, "Comma", value };
+            }
 
             // Rewrite Identifiers
             if (token.type == token::IDENTIFIER)
@@ -463,6 +468,21 @@ void testLexer()
         assert(tokens[0].toString() == "Params Start (");
         assert(tokens[1].toString() == "Params End )");
         assert(tokens[2].toString() == "Arrow ->");
+    }
+
+    {
+        // Test Param List
+        string source = "(double a, double b) -> return 123";
+        Lexer lexer(source);
+        auto tokens = lexer.tokenize();
+        assert(tokens.size() == 12);
+        assert(tokens[0].toString() == "Params Start (");
+        assert(tokens[1].toString() == "Identifier double");
+        assert(tokens[2].toString() == "Identifier a");
+        assert(tokens[3].toString() == "Comma ,");
+        assert(tokens[4].toString() == "Identifier double");
+        assert(tokens[5].toString() == "Identifier b");
+        assert(tokens[6].toString() == "Params End )");
     }
 
     {
