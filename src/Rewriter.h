@@ -113,8 +113,7 @@ public:
                 else
                 {
                     auto end = prev;
-                    auto start = end;
-                    Pair::seekToStart(start);
+                    auto start = Pair::startFor(end);
 
                     // Convert start token
                     start->type = cream::token::PARAMS_START;
