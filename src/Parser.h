@@ -389,7 +389,7 @@ public:
                 auto blockTokens = Pair::innerTokens(start);
                 auto block = parseBlock(blockTokens);
                 expression = new Block(block);
-                Pair::advanceToEnd(iter);
+                Pair::seekToEnd(iter);
             }
             else if (token.type == cream::token::EXPRESSION_START)
             {
@@ -398,7 +398,7 @@ public:
                 auto innerTokens = Pair::innerTokens(start);
                 auto innerExpression = parseExpression(innerTokens);
                 expression = new ExpressionGroup(*start, *end, innerExpression);
-                Pair::advanceToEnd(iter);
+                Pair::seekToEnd(iter);
             }
             else if (token.type == cream::token::PARAMS_START)
             {
@@ -407,7 +407,7 @@ public:
                 auto innerTokens = Pair::innerTokens(start);
                 auto params = parseParams(innerTokens);
                 expression = new ParamList(*start, *end, params);
-                Pair::advanceToEnd(iter);
+                Pair::seekToEnd(iter);
             }
             else if (token.type == cream::token::ARROW)
             {

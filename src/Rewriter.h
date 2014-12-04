@@ -93,7 +93,7 @@ public:
     }
     void rewriteLambdaExpressions(list<Token> &tokenList)
     {
-        for (auto iter = tokenList.begin(); iter != tokenList.end(); )
+        for (auto iter = tokenList.begin(); iter != tokenList.end(); iter++)
         {
             auto token = *iter;
             if (token.name == "Arrow")
@@ -112,20 +112,15 @@ public:
                 }
                 else
                 {
-                    // Find the param list start
-                    auto paramsIter = next;
-                    while (paramsIter->meta.position != prev->pair.start && paramsIter != tokenList.begin())
-                    {
-                        paramsIter--;
-                    }
-                    auto start = paramsIter;
+                    auto end = prev;
+                    auto start = end;
+                    Pair::seekToStart(start);
 
                     // Convert start token
                     start->type = cream::token::PARAMS_START;
                     start->name = "Params Start";
 
                     // Convert end token
-                    auto end = prev;
                     end->type = cream::token::PARAMS_END;
                     end->name = "Params End";
                 }
@@ -164,22 +159,10 @@ public:
                 }
                 else
                 {
-                    // Find end of existing block
+                    // Advance iterator to block start
                     auto start = next;
-                    auto blockIter = next;
-                    while (blockIter != tokenList.end() && blockIter->meta.position != start->pair.end)
-                    {
-                        blockIter++;
-                    }
-                    auto end = blockIter;
-
-                    // Advance main iterator to block start
                     iter = start;
                 }
-            }
-            else
-            {
-                iter++;
             }
         }
     }
