@@ -26,7 +26,7 @@ struct Pair
 {
     int start;
     int end;
-    static vector<Token> innerTokens(vector<Token>::iterator start);
+    template<typename Iterator> static vector<Token> innerTokens(Iterator start);
     template<typename Iterator> static Iterator endFor(Iterator start);
     template<typename Iterator> static Iterator startFor(Iterator end);
     template<typename Iterator> static void seekToEnd(Iterator & iter, Pair* pair=0);
@@ -69,8 +69,8 @@ int Token::lastImplicitPos = 0;
  * Gets inner tokens, given a token pair start iterator.
  */
 
-vector<Token>
-Pair::innerTokens(vector<Token>::iterator start)
+template <typename Iterator>
+vector<Token> Pair::innerTokens(Iterator start)
 {
     vector<Token> innerTokens;
     auto inner = start; inner++;
