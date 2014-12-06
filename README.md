@@ -64,6 +64,28 @@ int main()
 }
 ```
 
+### Lambdas
+
+CreamScript
+
+```coffee
+sum = (double a, double b) ->
+  return a + b
+
+sum(41, 1)
+```
+
+Compiled C++
+
+```cpp
+auto sum = [] (double a, double b)
+{
+  return a + b;
+}
+
+sum(41, 1);
+```
+
 ## Features
 
 Language
@@ -78,10 +100,13 @@ Language
   + ✓ Numbers
   + ✗ Strings
 + ✓ Blocks
+  + ✓ Single line
+  + ✗ Multi-line
 + ✓ Statements
   + ✗ If Else
   + ✗ For
   + ✗ While
+  + ✓ Return
 + ✓ Expressions
   + ✓ Expression Groups
 + ✓ Operations
@@ -90,7 +115,8 @@ Language
 + ✗ Functions
   + ✗ Definition
   + ✗ Calls
-  + ✗ Lambdas
+  + ✓ Lambdas
+  + ✓ Parameter Lists
 
 Compiler
 
@@ -99,5 +125,5 @@ Compiler
 + ✓ Rewriter
 + ✓ Lexer
 + ✓ Parser
-+ ✗ Back end
-  + ✗ C++ Output
++ ✓ Back end
+  + ✓ C++ Output
