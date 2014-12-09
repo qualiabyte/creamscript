@@ -13,6 +13,50 @@ namespace token {
 
 using namespace std;
 
+enum TokenType
+{
+    UNDEFINED,
+    IDENTIFIER,        // [a-z,A-Z][a-z,A-Z,0-9,_]+
+    TYPE,              // int, float, double, char...
+    KEYWORD,           // for, while, if, else, return...
+    NUMBER,            // [0-9]+(.[0-9]+)?
+    STRING,            // "[^"]*"
+    WHITESPACE,        // SP*
+    NEWLINE,           // \n
+    ASSIGN,            // =
+    ARROW,             // ->
+    PARAMS_START,      // (
+    PARAMS_END,        // )
+    PARAM_TYPE,        // <type>
+    PARAM_NAME,        // <identifier>
+    COMMA,             // ,
+    VAR_TYPE,          // <type>
+    VAR_NAME,          // <identifier>
+    OP_ADD,            // +
+    OP_INCREMENT,      // ++
+    OP_SUBTRACT,       // -
+    OP_DECREMENT,      // --
+    OP_MULTIPLY,       // *
+    OP_DIVIDE,         // /
+    BITWISE_AND,       // &
+    BITWISE_OR,        // |
+    COMPARE_EQ,        // == is
+    COMPARE_LT,        // <
+    COMPARE_GT,        // >
+    COMPARE_LTE,       // <=
+    COMPARE_GTE,       // >=
+    LOGICAL_AND,       // && and
+    LOGICAL_OR,        // || or
+    EXPRESSION_START,  // (
+    EXPRESSION_END,    // )
+    STATEMENT_START,   // \n ...
+    STATEMENT_END,     // ... \n
+    BLOCK_START,       // INDENT
+    BLOCK_END,         // UNINDENT
+    INDENT,            //   ...
+    UNKNOWN
+};
+
 struct Token;
 
 struct Metadata
@@ -40,10 +84,12 @@ struct Token
     string value;
     Metadata meta;
     Pair pair;
+
     string toString()
     {
         return name + " " + value;
     }
+
     string debug()
     {
         return "Token '" + value + "'\n" +
@@ -53,6 +99,34 @@ struct Token
                      ", position " + to_string(meta.position) + "\n" +
                "  pair.start: " + to_string(pair.end) + "\n" +
                "  pair.end: " + to_string(pair.end) + "\n";
+    }
+
+    template<typename Iterator> static Iterator nextNewline(Iterator iter, Iterator end)
+    {
+        auto newLine = iter;
+        while (newLine->type != cream::token::NEWLINE && newLine != end)
+        {
+            newLine++;
+        }
+        return newLine;
+    }
+
+    static Pair makeImplicitPair(Token & start, Token & end)
+    {
+        // Create pair object
+        cream::token::Pair pair;
+        pair.start = Token::implicitPosition();
+        pair.end = Token::implicitPosition();
+
+        // Set token pair data
+        start.pair = pair;
+        end.pair = pair;
+
+        // Set token positions
+        start.meta.position = pair.start;
+        end.meta.position = pair.end;
+
+        return pair;
     }
 
     // Gets the next position for implicit tokens.
@@ -134,73 +208,6 @@ void Pair::seekToEnd(Iterator & iter, Pair* pair)
         iter++;
     }
 }
-
-enum TokenType
-{
-    UNDEFINED,
-    IDENTIFIER,        // [a-z,A-Z][a-z,A-Z,0-9,_]+
-    TYPE,              // int, float, double, char...
-    KEYWORD,           // for, while, if, else, return...
-    NUMBER,            // [0-9]+(.[0-9]+)?
-    STRING,            // "[^"]*"
-    WHITESPACE,        // SP*
-    NEWLINE,           // \n
-    ASSIGN,            // =
-    ARROW,             // ->
-    PARAMS_START,      // (
-    PARAMS_END,        // )
-    PARAM_TYPE,        // <type>
-    PARAM_NAME,        // <identifier>
-    COMMA,             // ,
-    VAR_TYPE,          // <type>
-    VAR_NAME,          // <identifier>
-    OP_ADD,            // +
-    OP_INCREMENT,      // ++
-    OP_SUBTRACT,       // -
-    OP_DECREMENT,      // --
-    OP_MULTIPLY,       // *
-    OP_DIVIDE,         // /
-    BITWISE_AND,       // &
-    BITWISE_OR,        // |
-    COMPARE_EQ,        // == is
-    COMPARE_LT,        // <
-    COMPARE_GT,        // >
-    COMPARE_LTE,       // <=
-    COMPARE_GTE,       // >=
-    LOGICAL_AND,       // && and
-    LOGICAL_OR,        // || or
-    EXPRESSION_START,  // (
-    EXPRESSION_END,    // )
-    STATEMENT_START,   // \n ...
-    STATEMENT_END,     // ... \n
-    BLOCK_START,       // INDENT
-    BLOCK_END,         // UNINDENT
-    INDENT,            //   ...
-    UNKNOWN
-};
-
-map<string, TokenType> Tokens =
-{
-    { " "   , WHITESPACE },
-    { "\n"  , NEWLINE },
-    { "="   , ASSIGN },
-    { "+"   , OP_ADD },
-    { "++"  , OP_INCREMENT },
-    { "-"   , OP_SUBTRACT },
-    { "--"  , OP_DECREMENT },
-    { "*"   , OP_MULTIPLY },
-    { "/"   , OP_DIVIDE },
-    { "&&"  , LOGICAL_AND },
-    { "and" , LOGICAL_AND },
-    { "||"  , LOGICAL_OR },
-    { "or"  , LOGICAL_OR },
-    { "=="  , COMPARE_EQ },
-    { "is"  , COMPARE_EQ },
-    { "<"   , COMPARE_LT },
-    { "<="  , COMPARE_LTE },
-    { ">"   , COMPARE_GT },
-    { ">="  , COMPARE_GTE }
-};
 
 } // end cream::token
 

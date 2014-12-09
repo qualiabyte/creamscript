@@ -451,12 +451,16 @@ void testLexer()
         string source = "() -> return 123";
         Lexer lexer(source);
         auto tokens = lexer.tokenize();
-        assert(tokens.size() == 7);
+        assert(tokens.size() == 9);
         assert(tokens[0].toString() == "Params Start (");
         assert(tokens[1].toString() == "Params End )");
         assert(tokens[2].toString() == "Arrow ->");
         assert(tokens[3].toString() == "Block Start {");
-        assert(tokens[6].toString() == "Block End }");
+        assert(tokens[4].toString() == "Return return");
+        assert(tokens[5].toString() == "Expression Start (");
+        assert(tokens[6].toString() == "Number 123");
+        assert(tokens[7].toString() == "Expression End )");
+        assert(tokens[8].toString() == "Block End }");
     }
 
     {
@@ -464,7 +468,7 @@ void testLexer()
         string source = "-> return 123";
         Lexer lexer(source);
         auto tokens = lexer.tokenize();
-        assert(tokens.size() == 7);
+        assert(tokens.size() == 9);
         assert(tokens[0].toString() == "Params Start (");
         assert(tokens[1].toString() == "Params End )");
         assert(tokens[2].toString() == "Arrow ->");
@@ -475,7 +479,7 @@ void testLexer()
         string source = "(double a, double b) -> return 123";
         Lexer lexer(source);
         auto tokens = lexer.tokenize();
-        assert(tokens.size() == 12);
+        assert(tokens.size() == 14);
         assert(tokens[0].toString() == "Params Start (");
         assert(tokens[1].toString() == "Identifier double");
         assert(tokens[2].toString() == "Identifier a");
@@ -490,7 +494,7 @@ void testLexer()
         string source = "return 123";
         Lexer lexer(source);
         auto tokens = lexer.tokenize();
-        assert(tokens.size() == 2);
+        assert(tokens.size() == 4);
         assert(tokens[0].type == cream::token::KEYWORD);
         assert(tokens[0].toString() == "Return return");
     }

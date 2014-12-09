@@ -24,6 +24,7 @@ public:
         addExpressionMetadata(tokenList);
         removeWhitespace(tokenList);
         rewriteKeywords(tokenList);
+        rewriteReturnExpressions(tokenList);
         rewriteLambdaExpressions(tokenList);
         return Util::list2vec(tokenList);
     }
@@ -50,6 +51,37 @@ public:
                     token.type = cream::token::KEYWORD;
                     token.name = "Return";
                 }
+            }
+        }
+    }
+    void rewriteReturnExpressions(list<Token> &tokenList)
+    {
+        auto listBegin = tokenList.begin();
+        auto listEnd = tokenList.end();
+        for (auto iter = listBegin; iter != listEnd; iter++)
+        {
+            auto token = *iter;
+            auto next = iter; next++;
+            if (token.type == cream::token::KEYWORD)
+            {
+                if (token.value != "return")
+                    continue;
+                if (next->type == cream::token::EXPRESSION_START)
+                    continue;
+
+                // Create implicit pair
+                auto expressionStart = new Token { cream::token::EXPRESSION_START, "Expression Start", "(" };
+                auto expressionEnd = new Token { cream::token::EXPRESSION_END, "Expression End", ")" };
+                Token::makeImplicitPair(*expressionStart, *expressionEnd);
+
+                // Find statement end (TODO: Rewrite newlines)
+                auto newline = Token::nextNewline(iter, listEnd);
+
+                // Insert implicit start before next
+                tokenList.insert(next, *expressionStart);
+
+                // Insert implicit end before statement end
+                tokenList.insert(newline, *expressionEnd);
             }
         }
     }

@@ -425,12 +425,12 @@ public:
             {
                 if (token.name == "Return")
                 {
-                    // TODO: Implicit return expressions
                     auto next = iter; next++;
-                    vector<Token> operandTokens { *next };
+                    auto start = next;
+                    auto operandTokens = Pair::innerTokens(start);
                     auto operand = parseExpression(operandTokens);
                     expression = new Return(token, operand);
-                    iter = next;
+                    Pair::seekToEnd(iter, &start->pair);
                 }
             }
             else if (token.type == cream::token::ASSIGN ||
@@ -643,8 +643,8 @@ void testParser()
         // Test block
         auto source = "() -> return 42";
         auto tokens = lexer.tokenize(source);
-        assert(tokens.size() == 7);
-        vector<Token> blockTokens({ tokens[3], tokens[4], tokens[5], tokens[6] });
+        assert(tokens.size() == 9);
+        vector<Token> blockTokens({ tokens[3], tokens[4], tokens[5], tokens[6], tokens[7], tokens[8] });
         auto ast = parser.parse(blockTokens);
         assert(ast.root.statements.size() == 1);
         assert(ast.root.statements[0].outer->type == "Block");
