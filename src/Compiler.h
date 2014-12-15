@@ -79,6 +79,11 @@ public:
         {
             output += compileReturn((Return*) expression);
         }
+        else if (expression->left && expression->right)
+        {
+            auto binOp = dynamic_cast<BinaryOperation*>(expression);
+            output += compileBinaryOperation(binOp);
+        }
         else if (expression->type == "Identifier")
         {
             output += expression->value;
@@ -127,7 +132,23 @@ public:
     {
         return "return " + compileExpression(returnExpr->operand);
     }
-};
+
+    string compileBinaryOperation(BinaryOperation* binOp)
+    {
+        string output;
+        output += compileExpression(binOp->left) + " ";
+        output += compileOperator(&binOp->token) + " ";
+        output += compileExpression(binOp->right);
+        return output;
+    }
+
+    string compileOperator(Token* opToken)
+    {
+        string output;
+        output += opToken->value;
+        return output;
+    }
+ };
 
 class Compiler
 {
@@ -177,9 +198,9 @@ void testCompiler()
     {
         // Test multi-statement compilation
         auto source = "a = 1\n"
-                        "b = 2";
+                      "b = 2";
         auto expected = "a = 1;\n"
-                          "b = 2;";
+                        "b = 2;";
         auto output = compiler.compile(source);
         assert(output == expected);
     }
@@ -192,15 +213,23 @@ void testCompiler()
         assert(output == expected);
     }
 
-    /*
     {
-        // Test lambda param
-        auto source = "(double a) -> return a * a";
-        auto expected = "[] (double a, double b) { return a * b; }";
+        // Test binary operator compilation
+        auto source = "a * a";
+        auto expected = "a * a;";
         auto output = compiler.compile(source);
         assert(output == expected);
     }
 
+    {
+        // Test lambda param
+        auto source = "(double a) -> return a * a";
+        auto expected = "[] (double a) { return a * a; };";
+        auto output = compiler.compile(source);
+        assert(output == expected);
+    }
+
+    /*
     {
         // Test lambda params
         auto source = "(double a, double b) -> return a * b";
