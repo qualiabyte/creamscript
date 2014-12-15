@@ -116,8 +116,11 @@ public:
         for (auto iter = params.begin(); iter != params.end(); iter++)
         {
             auto param = *iter;
+            auto next = iter; next++;
             output += param.paramType + " ";
             output += param.paramName;
+            if (next != params.end())
+                output += ", ";
         }
         output += ")";
         return output;
@@ -229,19 +232,19 @@ void testCompiler()
         assert(output == expected);
     }
 
-    /*
     {
         // Test lambda params
         auto source = "(double a, double b) -> return a * b";
-        auto expected = "[] (double a, double b) { return a * b; }";
+        auto expected = "[] (double a, double b) { return a * b; };";
         auto output = compiler.compile(source);
         assert(output == expected);
     }
 
+    /*
     {
         // Test lambda assignment
         auto source = "multiply = (double a, double b) -> return a * b";
-        auto expected = "auto multiply = [] (double a, double b) { return a * b; }";
+        auto expected = "auto multiply = [] (double a, double b) { return a * b; };";
         auto output = compiler.compile(source);
         assert(output == expected);
     }
