@@ -4,6 +4,7 @@
 #include <cassert>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 #include "Symbol.h"
@@ -77,6 +78,27 @@ struct Pair
     template<typename Iterator> static void seekToStart(Iterator & iter, Pair* pair=0);
 };
 
+struct Line
+{
+    string indent;
+    string content;
+    static int firstIndentSize;
+    static int defaultIndentSize;
+
+    int indentLevel()
+    {
+        return indent.size() / baseIndentSize();
+    }
+
+    static int baseIndentSize()
+    {
+        return firstIndentSize ? firstIndentSize : defaultIndentSize;
+    }
+};
+
+int Line::firstIndentSize = 0;
+int Line::defaultIndentSize = 2;
+
 struct Token
 {
     int type;
@@ -84,6 +106,8 @@ struct Token
     string value;
     Metadata meta;
     Pair pair;
+    shared_ptr<Line> line;
+    shared_ptr<vector<Line*>> lines;
 
     string toString()
     {
@@ -212,6 +236,7 @@ void Pair::seekToEnd(Iterator & iter, Pair* pair)
 } // end cream::token
 
 using Token = cream::token::Token;
+using Line = cream::token::Line;
 using Pair = cream::token::Pair;
 
 } // end cream

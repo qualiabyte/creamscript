@@ -56,9 +56,19 @@ public:
     vector<Token> scan(string source)
     {
         vector<Token> tokens;
-        int line = 1;
-        int column = 1;
-        int position = 1;
+
+        // Token metadata
+        token::Metadata meta;
+        meta.line = 1;
+        meta.column = 1;
+        meta.position = 1;
+
+        // Line pointers
+        auto currentLine = make_shared<Line>();
+        auto sourceLines = make_shared<vector<Line*>>();
+        sourceLines->push_back(&*currentLine);
+
+        // Scanner setup
         scanner->source = source;
         scanner->position = -1;
         while (scanner->remaining() > 0)
@@ -113,6 +123,13 @@ public:
                 }
                 else
                 {
+                    if (meta.column == 1)
+                    {
+                        auto indent = value;
+                        if (Line::firstIndentSize == 0)
+                            Line::firstIndentSize = indent.size();
+                        currentLine->indent = indent;
+                    }
                     token = { token::WHITESPACE, "Whitespace", value };
                 }
             }
@@ -262,21 +279,30 @@ public:
                 }
             }
 
+            // Set line
+            token.line = currentLine;
+
+            // Set lines
+            token.lines = sourceLines;
+
             // Set token metadata
-            token.meta = { line, column, position };
+            token.meta = meta;
 
             // Update position
-            position += token.value.size();
+            meta.position += token.value.size();
 
             // Update line and column
             if (token.type == token::NEWLINE)
             {
-                column = 1;
-                line += token.value.size();
+                meta.column = 1;
+                meta.line += token.value.size();
+                currentLine = make_shared<Line>();
+                sourceLines->push_back(&*currentLine);
             }
             else
             {
-                column += token.value.size();
+                meta.column += token.value.size();
+                currentLine->content += token.value;
             }
 
             // Add the token
@@ -497,6 +523,26 @@ void testLexer()
         assert(tokens.size() == 4);
         assert(tokens[0].type == cream::token::KEYWORD);
         assert(tokens[0].toString() == "Return return");
+    }
+
+    {
+        // Test Lines
+        string source = "() ->\n"
+                        "  a = 1\n"
+                        "  b = 2";
+        Lexer lexer(source);
+        auto tokens = lexer.tokenize();
+        assert(tokens[0].lines->size() == 3);
+        assert(tokens[0].lines == tokens[1].lines);
+        assert(tokens[0].lines->at(0)->content == "() ->");
+        assert(tokens[0].lines->at(1)->content == "  a = 1");
+        assert(tokens[0].lines->at(2)->content == "  b = 2");
+        assert(tokens[0].lines->at(0)->indent == "");
+        assert(tokens[0].lines->at(1)->indent == "  ");
+        assert(tokens[0].lines->at(2)->indent == "  ");
+        assert(tokens[0].lines->at(0)->indentLevel() == 0);
+        assert(tokens[0].lines->at(1)->indentLevel() == 1);
+        assert(tokens[0].lines->at(2)->indentLevel() == 1);
     }
 }
 
