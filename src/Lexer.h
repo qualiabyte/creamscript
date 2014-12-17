@@ -139,15 +139,7 @@ public:
 
                 value += scanner->peek();
                 char next = scanner->peek(1);
-                if (next == '\n')
-                {
-                    scanner->seek(1);
-                    goto handle_newline;
-                }
-                else
-                {
-                    token = { token::NEWLINE, "Newline", value };
-                }
+                token = { token::NEWLINE, "Newline", value };
             }
             else if (c == '=')
             {
@@ -455,21 +447,27 @@ void testLexer()
         assert(tokens[0].meta.line == 1);
         assert(tokens[0].meta.column == 1);
         assert(tokens[0].meta.position == 1);
+        assert(tokens[0].value == "a");
         assert(tokens[2].meta.line == 1);
         assert(tokens[2].meta.column == 5);
         assert(tokens[2].meta.position == 5);
+        assert(tokens[2].value == "1");
         assert(tokens[4].meta.line == 2);
         assert(tokens[4].meta.column == 1);
         assert(tokens[4].meta.position == 7);
+        assert(tokens[4].value == "b");
         assert(tokens[6].meta.line == 2);
         assert(tokens[6].meta.column == 5);
         assert(tokens[6].meta.position == 11);
-        assert(tokens[8].meta.line == 4);
-        assert(tokens[8].meta.column == 1);
-        assert(tokens[8].meta.position == 14);
-        assert(tokens[10].meta.line == 4);
-        assert(tokens[10].meta.column == 5);
-        assert(tokens[10].meta.position == 18);
+        assert(tokens[6].value == "2");
+        assert(tokens[9].meta.line == 4);
+        assert(tokens[9].meta.column == 1);
+        assert(tokens[9].meta.position == 14);
+        assert(tokens[9].value == "c");
+        assert(tokens[11].meta.line == 4);
+        assert(tokens[11].meta.column == 5);
+        assert(tokens[11].meta.position == 18);
+        assert(tokens[11].value == "3");
     }
 
     {
@@ -543,6 +541,33 @@ void testLexer()
         assert(tokens[0].lines->at(0)->indentLevel() == 0);
         assert(tokens[0].lines->at(1)->indentLevel() == 1);
         assert(tokens[0].lines->at(2)->indentLevel() == 1);
+    }
+
+    {
+        // Test Indentation
+        string source = "() ->\n"
+                        "  if true\n"
+                        "    a = 1\n"
+                        "\n"
+                        "  else\n"
+                        "    b = 2\n"
+                        "\n"
+                        "bar()";
+        Lexer lexer(source);
+        auto tokens = lexer.tokenize();
+        assert(tokens[0].lines->size() == 8);
+        assert(tokens[0].lines == tokens[1].lines);
+        assert(tokens[0].lines->at(0)->indent == "");
+        assert(tokens[0].lines->at(1)->indent == "  ");
+        assert(tokens[0].lines->at(2)->indent == "    ");
+        assert(tokens[0].lines->at(0)->indentLevel() == 0);
+        assert(tokens[0].lines->at(1)->indentLevel() == 1);
+        assert(tokens[0].lines->at(2)->indentLevel() == 2);
+        assert(tokens[0].lines->at(3)->indentLevel() == 0);
+        assert(tokens[0].lines->at(4)->indentLevel() == 1);
+        assert(tokens[0].lines->at(5)->indentLevel() == 2);
+        assert(tokens[0].lines->at(6)->indentLevel() == 0);
+        assert(tokens[0].lines->at(7)->indentLevel() == 0);
     }
 }
 

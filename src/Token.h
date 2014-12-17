@@ -52,9 +52,10 @@ enum TokenType
     EXPRESSION_END,    // )
     STATEMENT_START,   // \n ...
     STATEMENT_END,     // ... \n
-    BLOCK_START,       // INDENT
-    BLOCK_END,         // UNINDENT
-    INDENT,            //   ...
+    BLOCK_START,       //
+    BLOCK_END,         //
+    INDENT,            // INDENT
+    OUTDENT,           // OUTDENT
     UNKNOWN
 };
 
