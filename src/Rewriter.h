@@ -23,11 +23,55 @@ public:
         auto tokenList = Util::vec2list(tokens);
         addExpressionMetadata(tokenList);
         removeEmptyLines(tokenList);
+        addIndents(tokenList);
         removeWhitespace(tokenList);
         rewriteKeywords(tokenList);
         rewriteReturnExpressions(tokenList);
         rewriteLambdaExpressions(tokenList);
         return Util::list2vec(tokenList);
+    }
+    void addIndents(list<Token> &tokenList)
+    {
+        for (auto iter = tokenList.begin(); iter != tokenList.end(); iter++)
+        {
+            auto token = *iter;
+            auto prev = iter; prev--;
+
+            if (token.meta.line == 1)
+                continue;
+
+            if (token.meta.column == 1)
+            {
+                int thisLevel = token.line->indentLevel();
+                int prevLevel = prev->line->indentLevel();
+                int shift = thisLevel - prevLevel;
+                if (shift > 0)
+                {
+                    if (shift > 1)
+                    {
+                        throw CreamError(
+                            "Unexpected indent on line " +
+                             to_string(token.meta.line) + "\n"
+                        );
+                    }
+                    else
+                    {
+                        // Add one indent
+                        Token indentToken { cream::token::INDENT, "Indent", "  " };
+                        tokenList.insert(iter, indentToken);
+                    }
+                }
+                else if (shift < 0)
+                {
+                    for (int i = 0; i > shift; i--)
+                    {
+                        // Add any outdents
+                        Token outdentToken { cream::token::OUTDENT, "Outdent", "" };
+                        tokenList.insert(iter, outdentToken);
+                    }
+                }
+            }
+        }
     }
     void removeEmptyLines(list<Token> &tokenList)
     {

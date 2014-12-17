@@ -569,6 +569,31 @@ void testLexer()
         assert(tokens[0].lines->at(6)->indentLevel() == 0);
         assert(tokens[0].lines->at(7)->indentLevel() == 0);
     }
+
+    {
+        // Test Indent Tokens
+        string source = "() ->\n"
+                        "  if true\n"
+                        "    a = 1\n"
+                        "\n"
+                        "  else\n"
+                        "    b = 2\n"
+                        "\n"
+                        "bar()";
+        Lexer lexer(source);
+        auto tokens = lexer.tokenize();
+        assert(tokens[6].name == "Indent");
+        assert(tokens[7].value == "if");
+        assert(tokens[10].name == "Indent");
+        assert(tokens[11].value == "a");
+        assert(tokens[15].name == "Outdent");
+        assert(tokens[16].value == "else");
+        assert(tokens[18].name == "Indent");
+        assert(tokens[19].value == "b");
+        assert(tokens[23].name == "Outdent");
+        assert(tokens[24].name == "Outdent");
+        assert(tokens[25].value == "bar");
+    }
 }
 
 } // end cream::lexer
