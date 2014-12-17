@@ -242,9 +242,9 @@ void testCompiler()
 
     /*
     {
-        // Test lambda assignment
-        auto source = "multiply = (double a, double b) -> return a * b";
-        auto expected = "auto multiply = [] (double a, double b) { return a * b; };";
+        // Test function declaration
+        auto source = "int main() -> return 0";
+        auto expected = "int main() { return 0; }";
         auto output = compiler.compile(source);
         assert(output == expected);
     }
@@ -252,10 +252,19 @@ void testCompiler()
     {
         // Test hello world
         auto source = "int main() ->\n"
-                        "  cout << \"Hello World!\"";
-        auto expected = "int main() {\n"
+                      "  cout << \"Hello World!\"";
+        auto expected = "int main()\n"
+                        "{\n"
                         "  cout << \"Hello World!\";\n"
                         "}";
+        auto output = compiler.compile(source);
+        assert(output == expected);
+    }
+
+    {
+        // Test lambda assignment
+        auto source = "multiply = (double a, double b) -> return a * b";
+        auto expected = "auto multiply = [] (double a, double b) { return a * b; };";
         auto output = compiler.compile(source);
         assert(output == expected);
     }
