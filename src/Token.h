@@ -86,6 +86,11 @@ struct Line
     static int firstIndentSize;
     static int defaultIndentSize;
 
+    bool isEmpty()
+    {
+        return content.size() == 0;
+    }
+
     int indentLevel()
     {
         return indent.size() / baseIndentSize();

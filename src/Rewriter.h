@@ -22,21 +22,35 @@ public:
     {
         auto tokenList = Util::vec2list(tokens);
         addExpressionMetadata(tokenList);
+        removeEmptyLines(tokenList);
         removeWhitespace(tokenList);
         rewriteKeywords(tokenList);
         rewriteReturnExpressions(tokenList);
         rewriteLambdaExpressions(tokenList);
         return Util::list2vec(tokenList);
     }
+    void removeEmptyLines(list<Token> &tokenList)
+    {
+        for (auto iter = tokenList.begin(); iter != tokenList.end(); iter++)
+        {
+            auto token = *iter;
+            if (token.name == "Newline" && token.line->isEmpty())
+            {
+                iter = tokenList.erase(iter);
+                iter--;
+            }
+        }
+    }
     void removeWhitespace(list<Token> &tokenList)
     {
-        for (auto iter = tokenList.begin(); iter != tokenList.end(); )
+        for (auto iter = tokenList.begin(); iter != tokenList.end(); iter++)
         {
             auto token = *iter;
             if (token.name == "Whitespace")
+            {
                 iter = tokenList.erase(iter);
-            else
-                iter++;
+                iter--;
+            }
         }
     }
     void rewriteKeywords(list<Token> &tokenList)

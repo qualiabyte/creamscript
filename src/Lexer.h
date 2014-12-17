@@ -460,14 +460,14 @@ void testLexer()
         assert(tokens[6].meta.column == 5);
         assert(tokens[6].meta.position == 11);
         assert(tokens[6].value == "2");
-        assert(tokens[9].meta.line == 4);
-        assert(tokens[9].meta.column == 1);
-        assert(tokens[9].meta.position == 14);
-        assert(tokens[9].value == "c");
-        assert(tokens[11].meta.line == 4);
-        assert(tokens[11].meta.column == 5);
-        assert(tokens[11].meta.position == 18);
-        assert(tokens[11].value == "3");
+        assert(tokens[8].meta.line == 4);
+        assert(tokens[8].meta.column == 1);
+        assert(tokens[8].meta.position == 14);
+        assert(tokens[8].value == "c");
+        assert(tokens[10].meta.line == 4);
+        assert(tokens[10].meta.column == 5);
+        assert(tokens[10].meta.position == 18);
+        assert(tokens[10].value == "3");
     }
 
     {
