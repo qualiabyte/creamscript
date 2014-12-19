@@ -582,16 +582,16 @@ void testLexer()
                         "bar()";
         Lexer lexer(source);
         auto tokens = lexer.tokenize();
-        assert(tokens[6].name == "Indent");
+        assert(tokens[6].name == "Block start");
         assert(tokens[7].value == "if");
-        assert(tokens[10].name == "Indent");
+        assert(tokens[10].name == "Block start");
         assert(tokens[11].value == "a");
-        assert(tokens[15].name == "Outdent");
+        assert(tokens[15].name == "Block end");
         assert(tokens[16].value == "else");
-        assert(tokens[18].name == "Indent");
+        assert(tokens[18].name == "Block start");
         assert(tokens[19].value == "b");
-        assert(tokens[23].name == "Outdent");
-        assert(tokens[24].name == "Outdent");
+        assert(tokens[23].name == "Block end");
+        assert(tokens[24].name == "Block end");
         assert(tokens[25].value == "bar");
     }
 }

@@ -25,6 +25,7 @@ public:
         removeEmptyLines(tokenList);
         addIndents(tokenList);
         removeWhitespace(tokenList);
+        rewriteIndents(tokenList);
         rewriteKeywords(tokenList);
         rewriteReturnExpressions(tokenList);
         rewriteLambdaExpressions(tokenList);
@@ -109,6 +110,25 @@ public:
                     token.type = cream::token::KEYWORD;
                     token.name = "Return";
                 }
+            }
+        }
+    }
+    void rewriteIndents(list<Token> &tokenList)
+    {
+        for (auto iter = tokenList.begin(); iter != tokenList.end(); iter++)
+        {
+            auto &token = *iter;
+            if (token.type == cream::token::INDENT)
+            {
+                // Replace indent with block start
+                Token blockStart { cream::token::BLOCK_START, "Block start", "{" };
+                token = blockStart;
+            }
+            else if (token.type == cream::token::OUTDENT)
+            {
+                // Replace outdent with block end
+                Token blockEnd { cream::token::BLOCK_END, "Block end", "}" };
+                token = blockEnd;
             }
         }
     }
