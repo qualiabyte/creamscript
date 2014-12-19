@@ -35,7 +35,7 @@ public:
     {
         for (auto iter = tokenList.begin(); iter != tokenList.end(); iter++)
         {
-            auto token = *iter;
+            auto const& token = *iter;
             auto prev = iter; prev--;
 
             if (token.meta.line == 1)
@@ -78,7 +78,7 @@ public:
     {
         for (auto iter = tokenList.begin(); iter != tokenList.end(); iter++)
         {
-            auto token = *iter;
+            auto const& token = *iter;
             if (token.name == "Newline" && token.line->isEmpty())
             {
                 iter = tokenList.erase(iter);
@@ -90,7 +90,7 @@ public:
     {
         for (auto iter = tokenList.begin(); iter != tokenList.end(); iter++)
         {
-            auto token = *iter;
+            auto const& token = *iter;
             if (token.name == "Whitespace")
             {
                 iter = tokenList.erase(iter);
@@ -102,7 +102,7 @@ public:
     {
         for (auto iter = tokenList.begin(); iter != tokenList.end(); iter++)
         {
-            auto &token = *iter;
+            auto & token = *iter;
             if (token.type == cream::token::IDENTIFIER)
             {
                 if (token.value == "return")
@@ -117,7 +117,7 @@ public:
     {
         for (auto iter = tokenList.begin(); iter != tokenList.end(); iter++)
         {
-            auto &token = *iter;
+            auto & token = *iter;
             if (token.type == cream::token::INDENT)
             {
                 // Replace indent with block start
@@ -138,7 +138,7 @@ public:
         auto listEnd = tokenList.end();
         for (auto iter = listBegin; iter != listEnd; iter++)
         {
-            auto token = *iter;
+            auto const& token = *iter;
             auto next = iter; next++;
             if (token.type == cream::token::KEYWORD)
             {
@@ -169,18 +169,18 @@ public:
         int depth = 0;
         for (auto iter = tokenList.begin(); iter != tokenList.end(); iter++)
         {
-            auto token = &(*iter);
+            auto & token = *iter;
             Token* start;
             Token* end;
-            if (token->name == "Expression Start")
+            if (token.name == "Expression Start")
             {
-                start = token;
+                start = &token;
                 startTokens.push_back(start);
                 depth++;
             }
-            else if (token->name == "Expression End")
+            else if (token.name == "Expression End")
             {
-                end = token;
+                end = &token;
                 start = startTokens.back();
 
                 token::Pair pair = { start->meta.position, end->meta.position };
@@ -191,8 +191,8 @@ public:
                 {
                     throw CreamError(
                         "Extra closing parenthesis found at "
-                        "line " + to_string(token->meta.line) + ", "
-                        "column " + to_string(token->meta.column) + "\n"
+                        "line " + to_string(token.meta.line) + ", "
+                        "column " + to_string(token.meta.column) + "\n"
                     );
                 }
 
@@ -205,7 +205,7 @@ public:
     {
         for (auto iter = tokenList.begin(); iter != tokenList.end(); iter++)
         {
-            auto token = *iter;
+            auto const& token = *iter;
             if (token.name == "Arrow")
             {
                 auto next = iter; next++;
