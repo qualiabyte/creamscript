@@ -182,10 +182,7 @@ public:
             {
                 end = &token;
                 start = startTokens.back();
-
-                token::Pair pair = { start->meta.position, end->meta.position };
-                start->pair = pair;
-                end->pair = pair;
+                Token::makePair(*start, *end);
 
                 if (depth == 0)
                 {
@@ -241,17 +238,7 @@ public:
                     auto blockIter = next;
                     auto blockStart = new Token { cream::token::BLOCK_START, "Block Start", "{" };
                     auto blockEnd = new Token { cream::token::BLOCK_END, "Block End", "}" };
-
-                    // Set pair metadata
-                    cream::token::Pair pair;
-                    pair.start = Token::implicitPosition();
-                    pair.end = Token::implicitPosition();
-                    blockStart->pair = pair;
-                    blockEnd->pair = pair;
-
-                    // Set position
-                    blockStart->meta.position = pair.start;
-                    blockEnd->meta.position = pair.end;
+                    Token::makeImplicitPair(*blockStart, *blockEnd);
 
                     // Insert block start after arrow
                     auto start = tokenList.insert(next, *blockStart);

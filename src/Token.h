@@ -141,20 +141,26 @@ struct Token
         return newLine;
     }
 
-    static Pair makeImplicitPair(Token & start, Token & end)
+
+    static Pair makePair(Token & start, Token & end)
     {
         // Create pair object
-        cream::token::Pair pair;
-        pair.start = Token::implicitPosition();
-        pair.end = Token::implicitPosition();
+        Pair pair { start.meta.position, end.meta.position };
 
         // Set token pair data
         start.pair = pair;
         end.pair = pair;
 
-        // Set token positions
-        start.meta.position = pair.start;
-        end.meta.position = pair.end;
+        return pair;
+    }
+    static Pair makeImplicitPair(Token & start, Token & end)
+    {
+        // Set implicit positions
+        start.meta.position = Token::implicitPosition();
+        end.meta.position = Token::implicitPosition();
+
+        // Set pair data
+        auto pair = makePair(start, end);
 
         return pair;
     }
