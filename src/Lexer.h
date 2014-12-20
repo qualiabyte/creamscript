@@ -582,17 +582,20 @@ void testLexer()
                         "bar()";
         Lexer lexer(source);
         auto tokens = lexer.tokenize();
-        assert(tokens[6].name == "Block start");
-        assert(tokens[7].value == "if");
-        assert(tokens[10].name == "Block start");
-        assert(tokens[11].value == "a");
-        assert(tokens[15].name == "Block end");
-        assert(tokens[16].value == "else");
-        assert(tokens[18].name == "Block start");
-        assert(tokens[19].value == "b");
-        assert(tokens[23].name == "Block end");
-        assert(tokens[24].name == "Block end");
-        assert(tokens[25].value == "bar");
+        assert(tokens[3].name == "Block Start");
+        assert(tokens[3].pair.end == tokens[21].meta.position);
+        assert(tokens[4].value == "if");
+        assert(tokens[7].name == "Block Start");
+        assert(tokens[7].pair.end == tokens[12].meta.position);
+        assert(tokens[8].value == "a");
+        assert(tokens[12].name == "Block End");
+        assert(tokens[13].value == "else");
+        assert(tokens[15].name == "Block Start");
+        assert(tokens[15].pair.end == tokens[20].meta.position);
+        assert(tokens[16].value == "b");
+        assert(tokens[20].name == "Block End");
+        assert(tokens[21].name == "Block End");
+        assert(tokens[22].value == "bar");
     }
 }
 

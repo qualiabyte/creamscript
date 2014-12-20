@@ -26,6 +26,7 @@ public:
         addIndents(tokenList);
         removeWhitespace(tokenList);
         rewriteIndents(tokenList);
+        addBlockMetadata(tokenList);
         rewriteKeywords(tokenList);
         rewriteReturnExpressions(tokenList);
         rewriteLambdaExpressions(tokenList);
@@ -121,13 +122,13 @@ public:
             if (token.type == cream::token::INDENT)
             {
                 // Replace indent with block start
-                Token blockStart { cream::token::BLOCK_START, "Block start", "{" };
+                Token blockStart { cream::token::BLOCK_START, "Block Start", "{" };
                 token = blockStart;
             }
             else if (token.type == cream::token::OUTDENT)
             {
                 // Replace outdent with block end
-                Token blockEnd { cream::token::BLOCK_END, "Block end", "}" };
+                Token blockEnd { cream::token::BLOCK_END, "Block End", "}" };
                 token = blockEnd;
             }
         }
@@ -160,6 +161,41 @@ public:
 
                 // Insert implicit end before statement end
                 tokenList.insert(newline, *expressionEnd);
+            }
+        }
+    }
+    void addBlockMetadata(list<Token> &tokenList)
+    {
+        list<Token*> startTokens;
+        int depth = 0;
+        for (auto iter = tokenList.begin(); iter != tokenList.end(); iter++)
+        {
+            auto & token = *iter;
+            Token* start;
+            Token* end;
+            if (token.name == "Block Start")
+            {
+                start = &token;
+                startTokens.push_back(start);
+                depth++;
+            }
+            else if (token.name == "Block End")
+            {
+                end = &token;
+                start = startTokens.back();
+                Token::makeImplicitPair(*start, *end);
+
+                if (depth == 0)
+                {
+                    throw CreamError(
+                        "Extra block end found at "
+                        "line " + to_string(token.meta.line) + ", "
+                        "column " + to_string(token.meta.column) + "\n"
+                    );
+                }
+
+                startTokens.pop_back();
+                depth--;
             }
         }
     }
@@ -230,6 +266,11 @@ public:
                     end->type = cream::token::PARAMS_END;
                     end->name = "Params End";
                 }
+
+                // Skip newlines
+                while (next->type == cream::token::NEWLINE ||
+                       next->type == cream::token::WHITESPACE)
+                    next = tokenList.erase(next);
 
                 // Replace right side with block
                 if (next->type != cream::token::BLOCK_START)
