@@ -307,27 +307,55 @@ public:
     Block parseBlock(vector<Token> tokens)
     {
         Block block;
-        vector<Statement> blockItems;
+        block.statements = parseStatements(tokens);
+        return block;
+    }
 
-        // Process tokens in block
+    vector<Statement> parseStatements(vector<Token> tokens)
+    {
+        vector<Statement> statements;
         for (auto iter = tokens.begin(); iter != tokens.end(); iter++)
         {
             // Process statement tokens
             vector<Token> statementTokens;
-            while (iter->type != token::NEWLINE && iter != tokens.end())
+            while (iter->type != cream::token::NEWLINE && iter != tokens.end())
             {
                 Token token = *iter;
-                statementTokens.push_back(token);
-                iter++;
+                if (token.type == cream::token::BLOCK_START)
+                {
+                    // Add block start
+                    auto blockStart = iter;
+                    statementTokens.push_back(*blockStart);
+                    iter++;
+
+                    // Add inner tokens
+                    while (iter->meta.position != blockStart->pair.end)
+                    {
+                        auto inner = iter;
+                        statementTokens.push_back(*inner);
+                        iter++;
+                    }
+
+                    // Add block end
+                    auto blockEnd = iter;
+                    statementTokens.push_back(*blockEnd);
+                    iter++;
+                }
+                else
+                {
+                    // Add token
+                    statementTokens.push_back(token);
+                    iter++;
+                }
             }
             Statement statement = parseStatement(statementTokens);
-            blockItems.push_back(statement);
+            statements.push_back(statement);
 
+            // Break after last token
             if (iter == tokens.end())
                 break;
         }
-        block.statements = blockItems;
-        return block;
+        return statements;
     }
 
     Statement parseStatement(vector<Token> tokens)
@@ -682,6 +710,23 @@ void testParser()
         assert(ast.root.statements[0].outer->paramList->params[0].paramName == "a");
         assert(ast.root.statements[0].outer->paramList->params[1].paramType == "double");
         assert(ast.root.statements[0].outer->paramList->params[1].paramName == "b");
+    }
+
+    {
+        // Test multi-statement block
+        auto source = "() ->\n"
+                      "  a = 1\n"
+                      "  b = 2\n";
+        auto tokens = lexer.tokenize(source);
+        auto ast = parser.parse(tokens);
+        assert(ast.root.statements.size() == 1);
+        assert(ast.root.statements[0].outer->type == "Lambda");
+        assert(ast.root.statements[0].outer->paramList->type == "Parameter List");
+        assert(ast.root.statements[0].outer->paramList->params.size() == 0);
+        assert(ast.root.statements[0].outer->block->type == "Block");
+        assert(ast.root.statements[0].outer->block->statements.size() == 2);
+        assert(ast.root.statements[0].outer->block->statements[0].outer->type == "Assignment");
+        assert(ast.root.statements[0].outer->block->statements[1].outer->type == "Assignment");
     }
 
     /*

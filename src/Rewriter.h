@@ -116,6 +116,7 @@ public:
     }
     void rewriteIndents(list<Token> &tokenList)
     {
+        int depth = 0;
         for (auto iter = tokenList.begin(); iter != tokenList.end(); iter++)
         {
             auto & token = *iter;
@@ -124,13 +125,22 @@ public:
                 // Replace indent with block start
                 Token blockStart { cream::token::BLOCK_START, "Block Start", "{" };
                 token = blockStart;
+                depth++;
             }
             else if (token.type == cream::token::OUTDENT)
             {
                 // Replace outdent with block end
                 Token blockEnd { cream::token::BLOCK_END, "Block End", "}" };
                 token = blockEnd;
+                depth--;
             }
+        }
+        // Close any blocks on last line
+        while (depth > 0)
+        {
+            Token blockEnd { cream::token::BLOCK_END, "Block End", "}" };
+            tokenList.push_back(blockEnd);
+            depth--;
         }
     }
     void rewriteReturnExpressions(list<Token> &tokenList)
