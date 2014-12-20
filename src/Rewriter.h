@@ -14,10 +14,12 @@ namespace rewriter {
 
 using namespace std;
 
-class Rewriter {
+class Rewriter
+{
 public:
     Rewriter() {}
     virtual ~Rewriter() {}
+
     vector<Token> rewrite(vector<Token> tokens)
     {
         auto tokenList = Util::vec2list(tokens);
@@ -32,6 +34,7 @@ public:
         rewriteLambdaExpressions(tokenList);
         return Util::list2vec(tokenList);
     }
+
     void addIndents(list<Token> &tokenList)
     {
         for (auto iter = tokenList.begin(); iter != tokenList.end(); iter++)
@@ -75,6 +78,7 @@ public:
             }
         }
     }
+
     void removeEmptyLines(list<Token> &tokenList)
     {
         for (auto iter = tokenList.begin(); iter != tokenList.end(); iter++)
@@ -87,6 +91,7 @@ public:
             }
         }
     }
+
     void removeWhitespace(list<Token> &tokenList)
     {
         for (auto iter = tokenList.begin(); iter != tokenList.end(); iter++)
@@ -99,6 +104,7 @@ public:
             }
         }
     }
+
     void rewriteKeywords(list<Token> &tokenList)
     {
         for (auto iter = tokenList.begin(); iter != tokenList.end(); iter++)
@@ -114,6 +120,7 @@ public:
             }
         }
     }
+
     void rewriteIndents(list<Token> &tokenList)
     {
         int depth = 0;
@@ -143,6 +150,7 @@ public:
             depth--;
         }
     }
+
     void rewriteReturnExpressions(list<Token> &tokenList)
     {
         auto listBegin = tokenList.begin();
@@ -174,6 +182,7 @@ public:
             }
         }
     }
+
     void addBlockMetadata(list<Token> &tokenList)
     {
         list<Token*> startTokens;
@@ -209,6 +218,7 @@ public:
             }
         }
     }
+
     void addExpressionMetadata(list<Token> &tokenList)
     {
         list<Token*> startTokens;
@@ -244,6 +254,7 @@ public:
             }
         }
     }
+
     void rewriteLambdaExpressions(list<Token> &tokenList)
     {
         for (auto iter = tokenList.begin(); iter != tokenList.end(); iter++)

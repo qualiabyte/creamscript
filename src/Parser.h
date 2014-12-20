@@ -247,7 +247,6 @@ struct Parameter : Node
         this->defaultValue = defaultValue;
     }
     virtual ~Parameter() {}
-
     string paramType;
     string paramName;
     string defaultValue;
