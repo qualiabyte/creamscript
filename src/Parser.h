@@ -783,6 +783,21 @@ void testParser()
         assert(ast.root.statements[0].outer->variable->varName == "abc");
     }
 
+    {
+        // Test variable definition
+        auto source = "int abc = 123";
+        auto tokens = lexer.tokenize(source);
+        auto ast = parser.parse(tokens);
+        assert(ast.root.statements.size() == 1);
+        assert(ast.root.statements[0].outer->type == "Assignment");
+        assert(ast.root.statements[0].outer->left->type == "Variable Declaration");
+        assert(ast.root.statements[0].outer->left->value == "int abc");
+        assert(ast.root.statements[0].outer->left->variable->varType == "int");
+        assert(ast.root.statements[0].outer->left->variable->varName == "abc");
+        assert(ast.root.statements[0].outer->right->type == "Number");
+        assert(ast.root.statements[0].outer->right->value == "123");
+    }
+
     /*
     {
         // Test assignment operators
