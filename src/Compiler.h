@@ -248,7 +248,9 @@ void testCompiler()
         auto output = compiler.compile(source);
         assert(output == expected);
     }
+    */
 
+    /*
     {
         // Test hello world
         auto source = "int main() ->\n"

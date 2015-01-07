@@ -36,6 +36,7 @@ public:
 
         // Words
         rewriteKeywords(tokenList);
+        rewriteTypes(tokenList);
 
         // Expressions
         rewriteReturnExpressions(tokenList);
@@ -126,6 +127,28 @@ public:
                     token.type = cream::token::KEYWORD;
                     token.name = "Return";
                 }
+            }
+        }
+    }
+
+    void rewriteTypes(list<Token> &tokenList)
+    {
+        for (auto iter = tokenList.begin(); iter != tokenList.end(); iter++)
+        {
+            auto & token = *iter;
+            auto next = iter; next++;
+
+            if (next == tokenList.end())
+                break;
+
+            // Rewrite identifiers followed by an identifier to a type
+            // for variable declarations, function definitions, and parameters
+            if (token.type == cream::token::IDENTIFIER &&
+                next->type == cream::token::IDENTIFIER)
+            {
+                // Change first identifier to a type
+                token.type = cream::token::TYPE;
+                token.name = "Type";
             }
         }
     }

@@ -324,8 +324,10 @@ void testLexer()
     {
         // Test multiple invocations
         Lexer lexer;
-        assert(lexer.tokenize("123")[0].toString() == "Number 123");
-        assert(lexer.tokenize("abc")[0].toString() == "Identifier abc");
+        auto tokens1 = lexer.tokenize("123");
+        auto tokens2 = lexer.tokenize("abc");
+        assert(tokens1[0].toString() == "Number 123");
+        assert(tokens2[0].toString() == "Identifier abc");
     }
 
     {
@@ -344,6 +346,25 @@ void testLexer()
         assert(tokens.size() == 2);
         assert(tokens[0].toString() == "Number 123");
         assert(tokens[1].toString() == "Identifier abc");
+    }
+
+    {
+        // Test variable types
+        string source = "int abc";
+        Lexer lexer(source);
+        auto tokens = lexer.tokenize();
+        assert(tokens.size() == 2);
+        assert(tokens[0].toString() == "Type int");
+        assert(tokens[1].toString() == "Identifier abc");
+    }
+
+    {
+        // Test function types
+        string source = "int foo() -> return 1";
+        Lexer lexer(source);
+        auto tokens = lexer.tokenize();
+        assert(tokens[0].toString() == "Type int");
+        assert(tokens[1].toString() == "Identifier foo");
     }
 
     {
@@ -505,10 +526,10 @@ void testLexer()
         auto tokens = lexer.tokenize();
         assert(tokens.size() == 14);
         assert(tokens[0].toString() == "Params Start (");
-        assert(tokens[1].toString() == "Identifier double");
+        assert(tokens[1].toString() == "Type double");
         assert(tokens[2].toString() == "Identifier a");
         assert(tokens[3].toString() == "Comma ,");
-        assert(tokens[4].toString() == "Identifier double");
+        assert(tokens[4].toString() == "Type double");
         assert(tokens[5].toString() == "Identifier b");
         assert(tokens[6].toString() == "Params End )");
     }
