@@ -23,15 +23,24 @@ public:
     vector<Token> rewrite(vector<Token> tokens)
     {
         auto tokenList = Util::vec2list(tokens);
-        addExpressionMetadata(tokenList);
+
+        // Whitespace
         removeEmptyLines(tokenList);
         addIndents(tokenList);
         removeWhitespace(tokenList);
         rewriteIndents(tokenList);
+
+        // Metadata
+        addExpressionMetadata(tokenList);
         addBlockMetadata(tokenList);
+
+        // Words
         rewriteKeywords(tokenList);
+
+        // Expressions
         rewriteReturnExpressions(tokenList);
         rewriteLambdaExpressions(tokenList);
+
         return Util::list2vec(tokenList);
     }
 
