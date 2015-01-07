@@ -61,12 +61,45 @@ struct Expression : Node
     // Statement members
     Expression* inner = NULL;
 
+    // Variable Declaration members
+    Expression* variable = NULL;
+
+    // Variable members
+    string varType;
+    string varName;
+
     // Binary operation members
     Expression* left = NULL;
     Expression* right = NULL;
 
     // Unary operation members
     Expression* operand = NULL;
+};
+
+struct Variable : Expression
+{
+    Variable(Token typeToken, Token nameToken)
+    {
+        this->type = "Variable";
+        this->typeToken = typeToken;
+        this->nameToken = nameToken;
+        this->varType = typeToken.value;
+        this->varName = nameToken.value;
+    }
+    virtual ~Variable() {}
+    Token typeToken;
+    Token nameToken;
+};
+
+struct VariableDeclaration : Expression
+{
+    VariableDeclaration(Variable* variable)
+    {
+        this->type = "Variable Declaration";
+        this->variable = variable;
+        this->value = this->variable->varType + " " + this->variable->varName;
+    }
+    virtual ~VariableDeclaration() {}
 };
 
 struct Number : Expression
@@ -444,6 +477,17 @@ public:
             {
                 expression = new Number(token.value);
             }
+            else if (token.type == cream::token::TYPE)
+            {
+                auto next = iter; next++;
+
+                // Variable Declaration
+                auto typeToken = *iter;
+                auto nameToken = *next;
+                auto variable = new Variable(typeToken, nameToken);
+                expression = new VariableDeclaration(variable);
+                iter = next;
+            }
             else if (token.type == cream::token::IDENTIFIER)
             {
                 expression = new Identifier(token.value);
@@ -507,7 +551,7 @@ public:
                     iter = expressions.erase(iter);
                     expressions.insert(iter, lambda);
                 }
-                if (operation->token.type == cream::token::ASSIGN)
+                else if (operation->token.type == cream::token::ASSIGN)
                 {
                     auto assignment = new Assignment(operation->token, *left, *right);
                     expressions.erase(left);
@@ -726,6 +770,17 @@ void testParser()
         assert(ast.root.statements[0].outer->block->statements.size() == 2);
         assert(ast.root.statements[0].outer->block->statements[0].outer->type == "Assignment");
         assert(ast.root.statements[0].outer->block->statements[1].outer->type == "Assignment");
+    }
+
+    {
+        // Test variable declaration
+        auto source = "int abc";
+        auto tokens = lexer.tokenize(source);
+        auto ast = parser.parse(tokens);
+        assert(ast.root.statements[0].outer->type == "Variable Declaration");
+        assert(ast.root.statements[0].outer->value == "int abc");
+        assert(ast.root.statements[0].outer->variable->varType == "int");
+        assert(ast.root.statements[0].outer->variable->varName == "abc");
     }
 
     /*
