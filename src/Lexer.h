@@ -110,6 +110,32 @@ public:
                     token = { token::NUMBER, "Number", value };
                 }
             }
+            else if (c == '"' || c == '\'')
+            {
+                char delimiter = scanner->peek();
+                char escape = '\\';
+
+                handle_string:
+                char next = scanner->peek(1);
+                if (next == delimiter)
+                {
+                    scanner->seek(1);
+                    goto finalize_string;
+                }
+                else if (next == escape)
+                {
+                    value += scanner->seek(2);
+                    goto handle_string;
+                }
+                else
+                {
+                    value += scanner->seek(1);
+                    goto handle_string;
+                }
+
+                finalize_string:
+                token = { token::STRING, "String", value };
+            }
             else if (isblank(c))
             {
                 handle_whitespace:
@@ -346,6 +372,19 @@ void testLexer()
         assert(tokens.size() == 2);
         assert(tokens[0].toString() == "Number 123");
         assert(tokens[1].toString() == "Identifier abc");
+    }
+
+    {
+        // Test Strings
+        string source = "\"Hello there!\" "
+                        "'I\\'m Alice.' "
+                        "'Nice to meet you.'";
+        Lexer lexer(source);
+        auto tokens = lexer.tokenize();
+        assert(tokens.size() == 3);
+        assert(tokens[0].toString() == "String Hello there!");
+        assert(tokens[1].toString() == "String I'm Alice.");
+        assert(tokens[2].toString() == "String Nice to meet you.");
     }
 
     {
