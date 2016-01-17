@@ -20,6 +20,8 @@ struct Statement;
 struct Expression;
 struct Parameter;
 struct ParamList;
+struct Function;
+struct Lambda;
 
 struct Node
 {
@@ -63,6 +65,14 @@ struct Expression : Node
 
     // Variable Declaration members
     Expression* variable = NULL;
+
+    // Function Declaration members
+    Expression* function = NULL;
+
+    // Function members
+    string returnType;
+    string functionName;
+    Lambda* lambda;
 
     // Variable members
     string varType;
@@ -316,6 +326,39 @@ struct Lambda : Expression
     }
 };
 
+struct Function : Expression
+{
+    Function(Token typeToken, Token nameToken, Lambda* lambda) : Expression()
+    {
+        this->type = "Function";
+        this->typeToken = typeToken;
+        this->nameToken = nameToken;
+        this->lambda = lambda;
+        this->returnType = typeToken.value;
+        this->functionName = nameToken.value;
+        this->block = lambda->block;
+    }
+    virtual ~Function()
+    {
+        delete lambda;
+    }
+    Token typeToken;
+    Token nameToken;
+};
+
+struct FunctionDeclaration : Expression
+{
+    FunctionDeclaration(Function* function) : Expression()
+    {
+        this->type = "Function Declaration";
+        this->function = (Expression*) function;
+    }
+    virtual ~FunctionDeclaration()
+    {
+        delete function;
+    }
+};
+
 struct AST
 {
     AST() {}
@@ -402,6 +445,7 @@ public:
     {
         auto expressions = parseTokens(tokens);
         processOperations(expressions);
+        processFunctions(expressions);
 
         if (expressions.size() > 1)
             throw CreamError("Expect only one top level expression");
@@ -591,6 +635,37 @@ public:
                     iter = expressions.erase(iter);
                     expressions.insert(iter, division);
                 }
+            }
+        }
+    }
+
+    // Creates functions for sequences of variable declaration + lambda.
+    void processFunctions(list<Expression*> &expressions)
+    {
+        for (auto iter = expressions.begin(); iter != expressions.end(); iter++)
+        {
+            auto next = iter; next++;
+            Expression* expression = *iter;
+            Expression* second = *next;
+            if (expression->type == "Variable Declaration" &&
+                second->type == "Lambda")
+            {
+                auto declaration = (VariableDeclaration*) expression;
+                auto variable = (Variable*) declaration->variable;
+
+                // Build function
+                Token type = variable->typeToken;
+                Token name = variable->nameToken;
+                Lambda* lambda = (Lambda*) second;
+                Function* function = new Function(type, name, lambda);
+
+                // Build declaration
+                auto functionDeclaration = new FunctionDeclaration(function);
+
+                // Replace with function declaration
+                expressions.erase(next);
+                iter = expressions.erase(iter);
+                expressions.insert(iter, functionDeclaration);
             }
         }
     }
@@ -796,6 +871,19 @@ void testParser()
         assert(ast.root.statements[0].outer->left->variable->varName == "abc");
         assert(ast.root.statements[0].outer->right->type == "Number");
         assert(ast.root.statements[0].outer->right->value == "123");
+    }
+
+    {
+        // Test function definition
+        auto source = "int main() -> return 1";
+        auto tokens = lexer.tokenize(source);
+        auto ast = parser.parse(tokens);
+        assert(ast.root.statements.size() == 1);
+        assert(ast.root.statements[0].outer->type == "Function Declaration");
+        assert(ast.root.statements[0].outer->function->type == "Function");
+        assert(ast.root.statements[0].outer->function->functionName == "main");
+        assert(ast.root.statements[0].outer->function->block->statements.size() == 1);
+        assert(ast.root.statements[0].outer->function->block->statements[0].outer->type == "Return");
     }
 
     /*
