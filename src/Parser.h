@@ -66,7 +66,7 @@ struct Expression : Node
     // Variable Declaration members
     Expression* variable = NULL;
 
-    // Function Declaration members
+    // Function Definition members
     Expression* function = NULL;
 
     // Function members
@@ -346,14 +346,14 @@ struct Function : Expression
     Token nameToken;
 };
 
-struct FunctionDeclaration : Expression
+struct FunctionDefinition : Expression
 {
-    FunctionDeclaration(Function* function) : Expression()
+    FunctionDefinition(Function* function) : Expression()
     {
-        this->type = "Function Declaration";
+        this->type = "Function Definition";
         this->function = (Expression*) function;
     }
-    virtual ~FunctionDeclaration()
+    virtual ~FunctionDefinition()
     {
         delete function;
     }
@@ -659,13 +659,13 @@ public:
                 Lambda* lambda = (Lambda*) second;
                 Function* function = new Function(type, name, lambda);
 
-                // Build declaration
-                auto functionDeclaration = new FunctionDeclaration(function);
+                // Build definition
+                auto functionDefinition = new FunctionDefinition(function);
 
-                // Replace with function declaration
+                // Replace with function definition
                 expressions.erase(next);
                 iter = expressions.erase(iter);
-                expressions.insert(iter, functionDeclaration);
+                expressions.insert(iter, functionDefinition);
             }
         }
     }
@@ -879,7 +879,7 @@ void testParser()
         auto tokens = lexer.tokenize(source);
         auto ast = parser.parse(tokens);
         assert(ast.root.statements.size() == 1);
-        assert(ast.root.statements[0].outer->type == "Function Declaration");
+        assert(ast.root.statements[0].outer->type == "Function Definition");
         assert(ast.root.statements[0].outer->function->type == "Function");
         assert(ast.root.statements[0].outer->function->functionName == "main");
         assert(ast.root.statements[0].outer->function->block->statements.size() == 1);
@@ -949,7 +949,7 @@ void testParser()
 using Parser = parser::Parser;
 using AST = parser::AST;
 using Function = parser::Function;
-using FunctionDeclaration = parser::FunctionDeclaration;
+using FunctionDefinition = parser::FunctionDefinition;
 using Block = parser::Block;
 using Statement = parser::Statement;
 using Expression = parser::Expression;

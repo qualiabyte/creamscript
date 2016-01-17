@@ -67,7 +67,7 @@ public:
     string compileStatementTerminator(Statement statement)
     {
         string output;
-        if (statement.outer->type == "Function Declaration")
+        if (statement.outer->type == "Function Definition")
             output = "";
         else
             output = ";";
@@ -77,9 +77,9 @@ public:
     string compileExpression(Expression* expression)
     {
         string output;
-        if (expression->type == "Function Declaration")
+        if (expression->type == "Function Definition")
         {
-            output += compileFunctionDeclaration((FunctionDeclaration*) expression);
+            output += compileFunctionDefinition((FunctionDefinition*) expression);
         }
         else if (expression->type == "Assignment")
         {
@@ -111,10 +111,10 @@ public:
         return output;
     }
 
-    string compileFunctionDeclaration(FunctionDeclaration* declaration)
+    string compileFunctionDefinition(FunctionDefinition* definition)
     {
         string output;
-        output += compileFunction((Function*) declaration->function);
+        output += compileFunction((Function*) definition->function);
         return output;
     }
 
@@ -274,7 +274,7 @@ void testCompiler()
     }
 
     {
-        // Test function declaration
+        // Test function definition
         auto source = "int main() -> return 0";
         auto expected = "int main() { return 0; }";
         auto output = compiler.compile(source);
