@@ -58,14 +58,30 @@ public:
 
     string compileStatement(Statement statement)
     {
-        string output = compileExpression(statement.outer) + ";";
+        string output;
+        output += compileExpression(statement.outer);
+        output += compileStatementTerminator(statement);
+        return output;
+    }
+
+    string compileStatementTerminator(Statement statement)
+    {
+        string output;
+        if (statement.outer->type == "Function Declaration")
+            output = "";
+        else
+            output = ";";
         return output;
     }
 
     string compileExpression(Expression* expression)
     {
         string output;
-        if (expression->type == "Assignment")
+        if (expression->type == "Function Declaration")
+        {
+            output += compileFunctionDeclaration((FunctionDeclaration*) expression);
+        }
+        else if (expression->type == "Assignment")
         {
             output += compileExpression(expression->left);
             output += " = ";
@@ -92,6 +108,23 @@ public:
         {
             output += expression->value;
         }
+        return output;
+    }
+
+    string compileFunctionDeclaration(FunctionDeclaration* declaration)
+    {
+        string output;
+        output += compileFunction((Function*) declaration->function);
+        return output;
+    }
+
+    string compileFunction(Function* function)
+    {
+        string output;
+        output += function->returnType + " ";
+        output += function->functionName;
+        output += compileLambdaParams(function->lambda) + " ";
+        output += compileLambdaBlock(function->lambda);
         return output;
     }
 
@@ -240,7 +273,6 @@ void testCompiler()
         assert(output == expected);
     }
 
-    /*
     {
         // Test function declaration
         auto source = "int main() -> return 0";
@@ -248,7 +280,6 @@ void testCompiler()
         auto output = compiler.compile(source);
         assert(output == expected);
     }
-    */
 
     /*
     {

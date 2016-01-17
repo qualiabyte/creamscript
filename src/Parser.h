@@ -948,6 +948,8 @@ void testParser()
 
 using Parser = parser::Parser;
 using AST = parser::AST;
+using Function = parser::Function;
+using FunctionDeclaration = parser::FunctionDeclaration;
 using Block = parser::Block;
 using Statement = parser::Statement;
 using Expression = parser::Expression;
