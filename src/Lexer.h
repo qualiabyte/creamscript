@@ -268,6 +268,52 @@ public:
                     token = { token::BITWISE_OR, "Bitwise Or", value };
                 }
             }
+            else if (c == '<')
+            {
+                handle_less:
+
+                value += c;
+                char next = scanner->peek(1);
+                if (next == '<')
+                {
+                    value += next;
+                    scanner->seek(1);
+                    token = { token::BITWISE_LEFT, "Bitwise Left", value };
+                }
+                else if (next == '=')
+                {
+                    value += next;
+                    scanner->seek(1);
+                    token = { token::COMPARE_LTE, "Compare LTE", value };
+                }
+                else
+                {
+                    token = { token::COMPARE_LT, "Compare LT", value };
+                }
+            }
+            else if (c == '>')
+            {
+                handle_greater:
+
+                value += c;
+                char next = scanner->peek(1);
+                if (next == '>')
+                {
+                    value += next;
+                    scanner->seek(1);
+                    token = { token::BITWISE_RIGHT, "Bitwise Right", value };
+                }
+                else if (next == '=')
+                {
+                    value += next;
+                    scanner->seek(1);
+                    token = { token::COMPARE_LTE, "Compare GTE", value };
+                }
+                else
+                {
+                    token = { token::COMPARE_LT, "Compare GT", value };
+                }
+            }
             else if (c == '(')
             {
                 value += c;
@@ -435,6 +481,41 @@ void testLexer()
         assert(tokens[3].toString() == "Decrement --");
         assert(tokens[4].toString() == "Identifier b");
     }
+
+    {
+        // Test Bitwise Operators
+        string source = "a & b | c << d >> e";
+        Lexer lexer(source);
+        auto tokens = lexer.tokenize();
+        assert(tokens.size() == 9);
+        assert(tokens[0].toString() == "Identifier a");
+        assert(tokens[1].toString() == "Bitwise And &");
+        assert(tokens[2].toString() == "Identifier b");
+        assert(tokens[3].toString() == "Bitwise Or |");
+        assert(tokens[4].toString() == "Identifier c");
+        assert(tokens[5].toString() == "Bitwise Left <<");
+        assert(tokens[6].toString() == "Identifier d");
+        assert(tokens[7].toString() == "Bitwise Right >>");
+        assert(tokens[8].toString() == "Identifier e");
+    }
+
+    {
+        // Test Comparison Operators
+        string source = "a < b <= c > d >= e";
+        Lexer lexer(source);
+        auto tokens = lexer.tokenize();
+        assert(tokens.size() == 9);
+        assert(tokens[0].toString() == "Identifier a");
+        assert(tokens[1].toString() == "Compare LT <");
+        assert(tokens[2].toString() == "Identifier b");
+        assert(tokens[3].toString() == "Compare LTE <=");
+        assert(tokens[4].toString() == "Identifier c");
+        assert(tokens[5].toString() == "Compare GT >");
+        assert(tokens[6].toString() == "Identifier d");
+        assert(tokens[7].toString() == "Compare GTE >=");
+        assert(tokens[8].toString() == "Identifier e");
+    }
+
 
     {
         // Test Logical Operators

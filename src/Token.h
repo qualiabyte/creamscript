@@ -41,6 +41,8 @@ enum TokenType
     OP_DIVIDE,         // /
     BITWISE_AND,       // &
     BITWISE_OR,        // |
+    BITWISE_LEFT,      // <<
+    BITWISE_RIGHT,     // >>
     COMPARE_EQ,        // == is
     COMPARE_LT,        // <
     COMPARE_GT,        // >
