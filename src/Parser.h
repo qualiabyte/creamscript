@@ -122,6 +122,17 @@ struct Number : Expression
     virtual ~Number() {}
 };
 
+struct String : Expression
+{
+    String(Token token)
+    {
+        this->type = "String";
+        this->token = token;
+        this->value = token.value;
+    }
+    virtual ~String() {}
+};
+
 struct Identifier : Expression
 {
     Identifier(string value="")
@@ -230,6 +241,110 @@ struct Division : BinaryOperation
         this->right = right;
     }
     virtual ~Division() {}
+};
+
+struct BitwiseAnd : BinaryOperation
+{
+    BitwiseAnd(Token token, Expression* left=0, Expression* right=0)
+        : BinaryOperation(token, left, right)
+    {
+        this->type = "Bitwise And";
+        this->token = token;
+        this->left = left;
+        this->right = right;
+    }
+    virtual ~BitwiseAnd() {}
+};
+
+struct BitwiseOr : BinaryOperation
+{
+    BitwiseOr(Token token, Expression* left=0, Expression* right=0)
+        : BinaryOperation(token, left, right)
+    {
+        this->type = "Bitwise Or";
+        this->token = token;
+        this->left = left;
+        this->right = right;
+    }
+    virtual ~BitwiseOr() {}
+};
+
+struct BitwiseLeft : BinaryOperation
+{
+    BitwiseLeft(Token token, Expression* left=0, Expression* right=0)
+        : BinaryOperation(token, left, right)
+    {
+        this->type = "Bitwise Left";
+        this->token = token;
+        this->left = left;
+        this->right = right;
+    }
+    virtual ~BitwiseLeft() {}
+};
+
+struct BitwiseRight : BinaryOperation
+{
+    BitwiseRight(Token token, Expression* left=0, Expression* right=0)
+        : BinaryOperation(token, left, right)
+    {
+        this->type = "Bitwise Right";
+        this->token = token;
+        this->left = left;
+        this->right = right;
+    }
+    virtual ~BitwiseRight() {}
+};
+
+struct CompareLT : BinaryOperation
+{
+    CompareLT(Token token, Expression* left=0, Expression* right=0)
+        : BinaryOperation(token, left, right)
+    {
+        this->type = "Compare LT";
+        this->token = token;
+        this->left = left;
+        this->right = right;
+    }
+    virtual ~CompareLT() {}
+};
+
+struct CompareLTE : BinaryOperation
+{
+    CompareLTE(Token token, Expression* left=0, Expression* right=0)
+        : BinaryOperation(token, left, right)
+    {
+        this->type = "Compare LTE";
+        this->token = token;
+        this->left = left;
+        this->right = right;
+    }
+    virtual ~CompareLTE() {}
+};
+
+struct CompareGT : BinaryOperation
+{
+    CompareGT(Token token, Expression* left=0, Expression* right=0)
+        : BinaryOperation(token, left, right)
+    {
+        this->type = "Compare GT";
+        this->token = token;
+        this->left = left;
+        this->right = right;
+    }
+    virtual ~CompareGT() {}
+};
+
+struct CompareGTE : BinaryOperation
+{
+    CompareGTE(Token token, Expression* left=0, Expression* right=0)
+        : BinaryOperation(token, left, right)
+    {
+        this->type = "Compare GTE";
+        this->token = token;
+        this->left = left;
+        this->right = right;
+    }
+    virtual ~CompareGTE() {}
 };
 
 struct Assignment : BinaryOperation
@@ -521,6 +636,10 @@ public:
             {
                 expression = new Number(token.value);
             }
+            else if (token.type == cream::token::STRING)
+            {
+                expression = new String(token);
+            }
             else if (token.type == cream::token::TYPE)
             {
                 auto next = iter; next++;
@@ -552,7 +671,16 @@ public:
                      token.type == cream::token::OP_ADD ||
                      token.type == cream::token::OP_SUBTRACT ||
                      token.type == cream::token::OP_MULTIPLY ||
-                     token.type == cream::token::OP_DIVIDE)
+                     token.type == cream::token::OP_DIVIDE ||
+                     token.type == cream::token::BITWISE_AND ||
+                     token.type == cream::token::BITWISE_OR ||
+                     token.type == cream::token::BITWISE_LEFT ||
+                     token.type == cream::token::BITWISE_RIGHT ||
+                     token.type == cream::token::COMPARE_LT ||
+                     token.type == cream::token::COMPARE_LTE ||
+                     token.type == cream::token::COMPARE_GT ||
+                     token.type == cream::token::COMPARE_GTE
+                     )
             {
                 expression = new Operation(token);
             }
@@ -634,6 +762,70 @@ public:
                     expressions.erase(right);
                     iter = expressions.erase(iter);
                     expressions.insert(iter, division);
+                }
+                else if (operation->token.type == cream::token::BITWISE_AND)
+                {
+                    auto bitAnd = new BitwiseAnd(operation->token, *left, *right);
+                    expressions.erase(left);
+                    expressions.erase(right);
+                    iter = expressions.erase(iter);
+                    expressions.insert(iter, bitAnd);
+                }
+                else if (operation->token.type == cream::token::BITWISE_OR)
+                {
+                    auto bitOr = new BitwiseOr(operation->token, *left, *right);
+                    expressions.erase(left);
+                    expressions.erase(right);
+                    iter = expressions.erase(iter);
+                    expressions.insert(iter, bitOr);
+                }
+                else if (operation->token.type == cream::token::BITWISE_LEFT)
+                {
+                    auto bitLeft = new BitwiseLeft(operation->token, *left, *right);
+                    expressions.erase(left);
+                    expressions.erase(right);
+                    iter = expressions.erase(iter);
+                    expressions.insert(iter, bitLeft);
+                }
+                else if (operation->token.type == cream::token::BITWISE_RIGHT)
+                {
+                    auto bitRight = new BitwiseRight(operation->token, *left, *right);
+                    expressions.erase(left);
+                    expressions.erase(right);
+                    iter = expressions.erase(iter);
+                    expressions.insert(iter, bitRight);
+                }
+                else if (operation->token.type == cream::token::COMPARE_LT)
+                {
+                    auto compareLT = new CompareLT(operation->token, *left, *right);
+                    expressions.erase(left);
+                    expressions.erase(right);
+                    iter = expressions.erase(iter);
+                    expressions.insert(iter, compareLT);
+                }
+                else if (operation->token.type == cream::token::COMPARE_LTE)
+                {
+                    auto compareLTE = new CompareLTE(operation->token, *left, *right);
+                    expressions.erase(left);
+                    expressions.erase(right);
+                    iter = expressions.erase(iter);
+                    expressions.insert(iter, compareLTE);
+                }
+                else if (operation->token.type == cream::token::COMPARE_GT)
+                {
+                    auto compareGT = new CompareGT(operation->token, *left, *right);
+                    expressions.erase(left);
+                    expressions.erase(right);
+                    iter = expressions.erase(iter);
+                    expressions.insert(iter, compareGT);
+                }
+                else if (operation->token.type == cream::token::COMPARE_GTE)
+                {
+                    auto compareGTE = new CompareGTE(operation->token, *left, *right);
+                    expressions.erase(left);
+                    expressions.erase(right);
+                    iter = expressions.erase(iter);
+                    expressions.insert(iter, compareGTE);
                 }
             }
         }
@@ -953,6 +1145,8 @@ using FunctionDefinition = parser::FunctionDefinition;
 using Block = parser::Block;
 using Statement = parser::Statement;
 using Expression = parser::Expression;
+using Number = parser::Number;
+using String = parser::String;
 using BinaryOperation = parser::BinaryOperation;
 using UnaryOperation = parser::UnaryOperation;
 using Addition = parser::Addition;

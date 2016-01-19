@@ -108,6 +108,10 @@ public:
         {
             output += expression->value;
         }
+        else if (expression->type == "String")
+        {
+            output += compileString((String*) expression);
+        }
         return output;
     }
 
@@ -184,6 +188,31 @@ public:
         output += opToken->value;
         return output;
     }
+
+    string compileString(String* s)
+    {
+        string output;
+        output += '"' + encodeString(s->value) + '"';
+        return output;
+    }
+
+    string encodeString(string s)
+    {
+        string output;
+        for (auto iter = s.begin(); iter != s.end(); iter++)
+        {
+            char c = *iter;
+            switch (c)
+            {
+                case '"': output += "\""; break;
+                case '\\': output += "\\"; break;
+                case '\n': output += "\n"; break;
+                case '\t': output += "\t"; break;
+                default: output += c;
+            }
+        }
+        return output;
+    }
  };
 
 class Compiler
@@ -258,6 +287,22 @@ void testCompiler()
     }
 
     {
+        // Test bitwise operator compilation
+        auto source = "a & a";
+        auto expected = "a & a;";
+        auto output = compiler.compile(source);
+        assert(output == expected);
+    }
+
+    {
+        // Test comparison operator compilation
+        auto source = "a < a";
+        auto expected = "a < a;";
+        auto output = compiler.compile(source);
+        assert(output == expected);
+    }
+
+    {
         // Test lambda param
         auto source = "(double a) -> return a * a";
         auto expected = "[] (double a) { return a * a; };";
@@ -281,19 +326,16 @@ void testCompiler()
         assert(output == expected);
     }
 
-    /*
     {
         // Test hello world
         auto source = "int main() ->\n"
                       "  cout << \"Hello World!\"";
-        auto expected = "int main()\n"
-                        "{\n"
-                        "  cout << \"Hello World!\";\n"
-                        "}";
+        auto expected = "int main() { cout << \"Hello World!\"; }";
         auto output = compiler.compile(source);
         assert(output == expected);
     }
 
+    /*
     {
         // Test lambda assignment
         auto source = "multiply = (double a, double b) -> return a * b";
