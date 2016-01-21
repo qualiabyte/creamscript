@@ -98,7 +98,7 @@ Language
 + ✗ Types
 + ✓ Literals
   + ✓ Numbers
-  + ✗ Strings
+  + ✓ Strings
 + ✓ Blocks
   + ✓ Single line
   + ✗ Multi-line
@@ -113,10 +113,10 @@ Language
   + ✓ Arithmetic
     + ✓ Add, Subtract, Multiply, Divide
 + ✗ Functions
-  + ✗ Definition
-  + ✗ Calls
+  + ✓ Definition
   + ✓ Lambdas
   + ✓ Parameter Lists
+  + ✗ Calls
 
 Compiler
 
